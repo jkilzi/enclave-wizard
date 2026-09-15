@@ -104,7 +104,7 @@ export interface ClusterConfig {
      * @type {string}
      * @memberof ClusterConfig
      */
-    sshPubKey: string;
+    sshPubPath: string;
 }
 
 /**
@@ -119,7 +119,7 @@ export function instanceOfClusterConfig(value: object): value is ClusterConfig {
     if (!('machineNetwork' in value) || value['machineNetwork'] === undefined) return false;
     if (!('pullSecret' in value) || value['pullSecret'] === undefined) return false;
     if (!('rendezvousIP' in value) || value['rendezvousIP'] === undefined) return false;
-    if (!('sshPubKey' in value) || value['sshPubKey'] === undefined) return false;
+    if (!('sshPubPath' in value) || value['sshPubPath'] === undefined) return false;
     return true;
 }
 
@@ -145,7 +145,7 @@ export function ClusterConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
         'masterMaxPods': json['masterMaxPods'] == null ? undefined : json['masterMaxPods'],
         'pullSecret': json['pullSecret'],
         'rendezvousIP': json['rendezvousIP'],
-        'sshPubKey': json['sshPubKey'],
+        'sshPubPath': json['sshPubPath'],
     };
 }
 
@@ -171,7 +171,7 @@ export function ClusterConfigToJSONTyped(value?: Omit<ClusterConfig, '$schema'> 
         'masterMaxPods': value['masterMaxPods'],
         'pullSecret': value['pullSecret'],
         'rendezvousIP': value['rendezvousIP'],
-        'sshPubKey': value['sshPubKey'],
+        'sshPubPath': value['sshPubPath'],
     };
 }
 

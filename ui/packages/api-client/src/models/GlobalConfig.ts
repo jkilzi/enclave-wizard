@@ -129,60 +129,6 @@ export interface GlobalConfig {
      */
     enabledPlugins?: Array<string> | null;
     /**
-     * OSAC deployment profile
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacProfile?: string;
-    /**
-     * Path to AAP license manifest.zip on the landing zone
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacAapLicenseFile?: string;
-    /**
-     * Use external PostgreSQL instead of built-in
-     * @type {boolean}
-     * @memberof GlobalConfig
-     */
-    osacBYODatabase?: boolean;
-    /**
-     * PostgreSQL connection URL when using BYO database
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDatabaseUrl?: string;
-    /**
-     * Fully-qualified Ansible role name of the DNS driver
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDnsClass?: string;
-    /**
-     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDnsZone?: string;
-    /**
-     * Number of Keycloak replicas
-     * @type {number}
-     * @memberof GlobalConfig
-     */
-    rhbkInstances?: number;
-    /**
-     * Deploy PostgreSQL alongside Keycloak
-     * @type {boolean}
-     * @memberof GlobalConfig
-     */
-    rhbkDeployDatabase?: boolean;
-    /**
-     * PVC size for Keycloak PostgreSQL
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    rhbkDbSize?: string;
-    /**
      * Virtual IP for ingress wildcard
      * @type {string}
      * @memberof GlobalConfig
@@ -237,6 +183,18 @@ export interface GlobalConfig {
      */
     odfExternalConfig?: string;
     /**
+     * Fully-qualified Ansible role name of the DNS driver
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacDnsClass?: GlobalConfigOsacDnsClassEnum;
+    /**
+     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacDnsZone?: string;
+    /**
      * 
      * @type {any}
      * @memberof GlobalConfig
@@ -277,7 +235,7 @@ export interface GlobalConfig {
      * @type {string}
      * @memberof GlobalConfig
      */
-    sshPubKey: string;
+    sshPubPath: string;
     /**
      * Storage plugin
      * @type {string}
@@ -337,6 +295,14 @@ export type GlobalConfigOcMirrorLogLevelEnum = typeof GlobalConfigOcMirrorLogLev
 /**
  * @export
  */
+export const GlobalConfigOsacDnsClassEnum = {
+    DnsRoute53Dns: 'dns.route53.dns'
+} as const;
+export type GlobalConfigOsacDnsClassEnum = typeof GlobalConfigOsacDnsClassEnum[keyof typeof GlobalConfigOsacDnsClassEnum];
+
+/**
+ * @export
+ */
 export const GlobalConfigQuayBackendEnum = {
     RadosGwStorage: 'RadosGWStorage',
     LocalStorage: 'LocalStorage'
@@ -373,7 +339,8 @@ export function instanceOfGlobalConfig(value: object): value is GlobalConfig {
     if (!('quayPassword' in value) || value['quayPassword'] === undefined) return false;
     if (!('quayUser' in value) || value['quayUser'] === undefined) return false;
     if (!('rendezvousIP' in value) || value['rendezvousIP'] === undefined) return false;
-    if (!('sshPubKey' in value) || value['sshPubKey'] === undefined) return false;
+    if (!('sshPubPath' in value) || value['sshPubPath'] === undefined) return false;
+    if (!('storagePlugin' in value) || value['storagePlugin'] === undefined) return false;
     if (!('workingDir' in value) || value['workingDir'] === undefined) return false;
     return true;
 }
@@ -399,15 +366,6 @@ export function GlobalConfigFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'disconnected': json['disconnected'] == null ? undefined : json['disconnected'],
         'diskEncryption': json['diskEncryption'] == null ? undefined : json['diskEncryption'],
         'enabledPlugins': json['enabled_plugins'] == null ? undefined : json['enabled_plugins'],
-        'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
-        'osacAapLicenseFile': json['osacAapLicenseFile'] == null ? undefined : json['osacAapLicenseFile'],
-        'osacBYODatabase': json['osacBYODatabase'] == null ? undefined : json['osacBYODatabase'],
-        'osacDatabaseUrl': json['osacDatabaseUrl'] == null ? undefined : json['osacDatabaseUrl'],
-        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
-        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
-        'rhbkInstances': json['rhbk_instances'] == null ? undefined : json['rhbk_instances'],
-        'rhbkDeployDatabase': json['rhbk_deploy_database'] == null ? undefined : json['rhbk_deploy_database'],
-        'rhbkDbSize': json['rhbk_db_size'] == null ? undefined : json['rhbk_db_size'],
         'ingressVIP': json['ingressVIP'],
         'lvmsConfig': json['lvmsConfig'] == null ? undefined : LVMSStorageConfigFromJSON(json['lvmsConfig']),
         'lzBmcHostname': json['lzBmcHostname'] == null ? undefined : json['lzBmcHostname'],
@@ -417,13 +375,15 @@ export function GlobalConfigFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'ocMirrorLogLevel': json['ocMirrorLogLevel'] == null ? undefined : json['ocMirrorLogLevel'],
         'odfDefaults': json['odfDefaults'] == null ? undefined : ODFConfigFromJSON(json['odfDefaults']),
         'odfExternalConfig': json['odfExternalConfig'] == null ? undefined : json['odfExternalConfig'],
+        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
+        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
         'pullSecret': json['pullSecret'],
         'quayBackend': json['quayBackend'],
         'quayBackendRGWConfiguration': json['quayBackendRGWConfiguration'] == null ? undefined : QuayBackendRGWConfigurationFromJSON(json['quayBackendRGWConfiguration']),
         'quayPassword': json['quayPassword'],
         'quayUser': json['quayUser'],
         'rendezvousIP': json['rendezvousIP'],
-        'sshPubKey': json['sshPubKey'],
+        'sshPubPath': json['sshPubPath'],
         'storagePlugin': json['storage_plugin'],
         'vastAdminPassword': json['vastAdminPassword'] == null ? undefined : json['vastAdminPassword'],
         'vastAdminUsername': json['vastAdminUsername'] == null ? undefined : json['vastAdminUsername'],
@@ -455,16 +415,7 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
         'defaultPrefix': value['defaultPrefix'],
         'disconnected': value['disconnected'],
         'diskEncryption': value['diskEncryption'],
-        'enabled_plugins': value['enabledPlugins'] ?? [],
-        'osacProfile': value['osacProfile'],
-        'osacAapLicenseFile': value['osacAapLicenseFile'],
-        'osacBYODatabase': value['osacBYODatabase'],
-        'osacDatabaseUrl': value['osacDatabaseUrl'],
-        'osacDnsClass': value['osacDnsClass'],
-        'osacDnsZone': value['osacDnsZone'],
-        'rhbk_instances': value['rhbkInstances'],
-        'rhbk_deploy_database': value['rhbkDeployDatabase'],
-        'rhbk_db_size': value['rhbkDbSize'],
+        'enabled_plugins': value['enabledPlugins'],
         'ingressVIP': value['ingressVIP'],
         'lvmsConfig': LVMSStorageConfigToJSON(value['lvmsConfig']),
         'lzBmcHostname': value['lzBmcHostname'],
@@ -474,13 +425,15 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
         'ocMirrorLogLevel': value['ocMirrorLogLevel'],
         'odfDefaults': ODFConfigToJSON(value['odfDefaults']),
         'odfExternalConfig': value['odfExternalConfig'],
+        'osacDnsClass': value['osacDnsClass'],
+        'osacDnsZone': value['osacDnsZone'],
         'pullSecret': value['pullSecret'],
         'quayBackend': value['quayBackend'],
         'quayBackendRGWConfiguration': QuayBackendRGWConfigurationToJSON(value['quayBackendRGWConfiguration']),
         'quayPassword': value['quayPassword'],
         'quayUser': value['quayUser'],
         'rendezvousIP': value['rendezvousIP'],
-        'sshPubKey': value['sshPubKey'],
+        'sshPubPath': value['sshPubPath'],
         'storage_plugin': value['storagePlugin'],
         'vastAdminPassword': value['vastAdminPassword'],
         'vastAdminUsername': value['vastAdminUsername'],

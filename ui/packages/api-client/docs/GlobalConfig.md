@@ -9,7 +9,6 @@ Name | Type
 `agentHosts` | [Array&lt;HostEntry&gt;](HostEntry.md)
 `apiVIP` | string
 `baseDomain` | string
-`blockStorageBackend` | string
 `clusterName` | string
 `defaultDNS` | string
 `defaultGateway` | string
@@ -27,6 +26,8 @@ Name | Type
 `ocMirrorLogLevel` | string
 `odfDefaults` | [ODFConfig](ODFConfig.md)
 `odfExternalConfig` | string
+`osacDnsClass` | string
+`osacDnsZone` | string
 `pullSecret` | any
 `quayBackend` | string
 `quayBackendRGWConfiguration` | [QuayBackendRGWConfiguration](QuayBackendRGWConfiguration.md)
@@ -52,7 +53,6 @@ const example = {
   "agentHosts": null,
   "apiVIP": null,
   "baseDomain": null,
-  "blockStorageBackend": null,
   "clusterName": null,
   "defaultDNS": null,
   "defaultGateway": null,
@@ -70,6 +70,8 @@ const example = {
   "ocMirrorLogLevel": null,
   "odfDefaults": null,
   "odfExternalConfig": null,
+  "osacDnsClass": null,
+  "osacDnsZone": null,
   "pullSecret": null,
   "quayBackend": null,
   "quayBackendRGWConfiguration": null,

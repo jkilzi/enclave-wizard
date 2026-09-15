@@ -66,12 +66,34 @@ export interface PluginsConfig {
      */
     odfDefaults?: ODFConfig;
     /**
+     * Fully-qualified Ansible role name of the DNS driver
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacDnsClass?: PluginsConfigOsacDnsClassEnum;
+    /**
+     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacDnsZone?: string;
+    /**
      * VAST CSI deployment defaults
      * @type {VASTConfig}
      * @memberof PluginsConfig
      */
     vastDefaults?: VASTConfig;
 }
+
+
+/**
+ * @export
+ */
+export const PluginsConfigOsacDnsClassEnum = {
+    DnsRoute53Dns: 'dns.route53.dns'
+} as const;
+export type PluginsConfigOsacDnsClassEnum = typeof PluginsConfigOsacDnsClassEnum[keyof typeof PluginsConfigOsacDnsClassEnum];
+
 
 /**
  * Check if a given object implements the PluginsConfig interface.
@@ -94,6 +116,8 @@ export function PluginsConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
         'enabledPlugins': json['enabled_plugins'] == null ? undefined : json['enabled_plugins'],
         'lvmsDefaults': json['lvmsDefaults'] == null ? undefined : LVMSConfigFromJSON(json['lvmsDefaults']),
         'odfDefaults': json['odfDefaults'] == null ? undefined : ODFConfigFromJSON(json['odfDefaults']),
+        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
+        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
         'vastDefaults': json['vastDefaults'] == null ? undefined : VASTConfigFromJSON(json['vastDefaults']),
     };
 }
@@ -112,6 +136,8 @@ export function PluginsConfigToJSONTyped(value?: Omit<PluginsConfig, '$schema'> 
         'enabled_plugins': value['enabledPlugins'],
         'lvmsDefaults': LVMSConfigToJSON(value['lvmsDefaults']),
         'odfDefaults': ODFConfigToJSON(value['odfDefaults']),
+        'osacDnsClass': value['osacDnsClass'],
+        'osacDnsZone': value['osacDnsZone'],
         'vastDefaults': VASTConfigToJSON(value['vastDefaults']),
     };
 }

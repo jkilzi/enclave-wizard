@@ -10,6 +10,8 @@ Name | Type
 `enabledPlugins` | Array&lt;string&gt;
 `lvmsDefaults` | [LVMSConfig](LVMSConfig.md)
 `odfDefaults` | [ODFConfig](ODFConfig.md)
+`osacDnsClass` | string
+`osacDnsZone` | string
 `vastDefaults` | [VASTConfig](VASTConfig.md)
 
 ## Example
@@ -23,6 +25,8 @@ const example = {
   "enabledPlugins": null,
   "lvmsDefaults": null,
   "odfDefaults": null,
+  "osacDnsClass": null,
+  "osacDnsZone": null,
   "vastDefaults": null,
 } satisfies PluginsConfig
 
