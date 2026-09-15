@@ -2,5 +2,6 @@
 package schema
 
 type LvmsConfig struct {
-	LvmsConfig *map[string]any `yaml:"lvmsConfig,omitempty" json:"lvmsConfig,omitempty" doc:"LVMS storage configuration overrides for this deployment."`
+	LvmsConfig           *map[string]any `yaml:"lvmsConfig,omitempty" json:"lvmsConfig,omitempty" doc:"LVMS storage configuration overrides for this deployment."`
+	LvmsQuayAppResources *map[string]any `yaml:"lvmsQuayAppResources,omitempty" json:"lvmsQuayAppResources,omitempty" doc:"Override resource requests/limits for the managed Quay app container. This mapping replaces the default wholesale (Ansible hash_behaviour is \"replace\"), so a complete requests/limits set is required to avoid silently dropping default values."`
 }
