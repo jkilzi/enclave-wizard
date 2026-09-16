@@ -13,7 +13,7 @@ LDFLAGS := -w -s -X main.wizardVersion=$(WIZARD_VERSION) -X main.enclaveVersion=
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9\/-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-.PHONY: build build-linux build-ui run test lint clean tidy deploy teardown generate generate-schema enclave-mock clean-enclave-mock run-mock preview deploy-preview bm-emulation bm-emulation-config bm-teardown test-config demo-build demo-start demo-stop demo-restart demo dev-hmr
+.PHONY: build build-linux build-ui run test lint clean tidy deploy teardown generate generate-schema enclave-mock clean-enclave-mock run-mock preview deploy-preview bm-emulation bm-emulation-config bm-teardown test-config demo-build demo-start demo-stop demo-restart demo dev-ui
 
 ##@ Build
 
@@ -157,31 +157,31 @@ run-mock: build
 	./$(BINARY) --enclave-dir enclave-mock \
 		--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key
 
-API_PROXY_TARGET ?= https://127.0.0.1:3443
 WIZARD_TLS_CERT ?= hack/tls/server.crt
 WIZARD_TLS_KEY ?= hack/tls/server.key
-# Vite uses :3001; wizard HTTP→HTTPS redirect must use a different port.
-WIZARD_HTTP_PORT ?= 3080
 WIZARD_DEV_FLAGS := --no-auth --enclave-dir enclave-mock \
 	--password-file /tmp/enclave-wizard-dev-pass \
-	--tls-cert $(WIZARD_TLS_CERT) --tls-key $(WIZARD_TLS_KEY) \
-	--http-port $(WIZARD_HTTP_PORT)
+	--tls-cert $(WIZARD_TLS_CERT) --tls-key $(WIZARD_TLS_KEY)
 
-ensure-dev-tls:
+ensure-dev-certs:
 	@mkdir -p hack/tls
 	@if [ ! -f $(WIZARD_TLS_CERT) ]; then \
 		$(GO) run . generate-cert --cert $(WIZARD_TLS_CERT) --key $(WIZARD_TLS_KEY); \
 	fi
 
-dev-hmr: ensure-dev-tls ## Run API + Vite (HMR). UI: https://localhost:3001/wizard (hack/tls certs).
+VITE_PORT ?= 3080
+API_PROXY_TARGET ?= https://127.0.0.1:3443
+
+dev-ui: ensure-dev-certs ## Run API + Vite (HMR). UI: https://localhost:$(VITE_PORT)/wizard (hack/tls certs).
 	cd ui \
 	&& yarn install \
 	&& API_PROXY_TARGET=$(API_PROXY_TARGET) \
+		VITE_PORT=$(VITE_PORT) \
 		VITE_TLS_CERT=$(abspath $(WIZARD_TLS_CERT)) \
 		VITE_TLS_KEY=$(abspath $(WIZARD_TLS_KEY)) \
 		yarn run dev:stack
 
-dev: ## Build and run API (no-auth, enclave-mock); invoked by dev-hmr for the API process.
+dev: ## Build and run API (no-auth, enclave-mock); invoked by dev-ui for the API process.
 	$(GO) build -ldflags="$(LDFLAGS)" -tags dev -o $(BINARY) .
 	./$(BINARY) $(WIZARD_DEV_FLAGS)
 

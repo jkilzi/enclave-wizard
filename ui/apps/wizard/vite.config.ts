@@ -29,7 +29,7 @@ function makeHttpsConfig(): { key: Buffer; cert: Buffer } | undefined {
 }
 
 export default defineConfig((_env) => {
-  const devPort = Number(process.env.VITE_PORT || 3001);
+  const devPort = Number(process.env.VITE_PORT || 3080);
   const proxyTarget =
     process.env.API_PROXY_TARGET || "https://127.0.0.1:3443";
   const https = makeHttpsConfig();
