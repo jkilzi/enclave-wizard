@@ -158,16 +158,28 @@ run-mock: build
 		--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key
 
 API_PROXY_TARGET ?= https://127.0.0.1:3443
+WIZARD_TLS_CERT ?= hack/tls/server.crt
+WIZARD_TLS_KEY ?= hack/tls/server.key
 # Vite uses :3001; wizard HTTP→HTTPS redirect must use a different port.
 WIZARD_HTTP_PORT ?= 3080
 WIZARD_DEV_FLAGS := --no-auth --enclave-dir enclave-mock \
 	--password-file /tmp/enclave-wizard-dev-pass \
-	--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key \
+	--tls-cert $(WIZARD_TLS_CERT) --tls-key $(WIZARD_TLS_KEY) \
 	--http-port $(WIZARD_HTTP_PORT)
 
-dev-hmr: ## Run API + Vite Dev-server (with HMR).
-	cd ui && yarn install
-	cd ui && API_PROXY_TARGET=$(API_PROXY_TARGET) yarn run dev:stack
+ensure-dev-tls:
+	@mkdir -p hack/tls
+	@if [ ! -f $(WIZARD_TLS_CERT) ]; then \
+		$(GO) run . generate-cert --cert $(WIZARD_TLS_CERT) --key $(WIZARD_TLS_KEY); \
+	fi
+
+dev-hmr: ensure-dev-tls ## Run API + Vite (HMR). UI: https://localhost:3001/wizard (hack/tls certs).
+	cd ui \
+	&& yarn install \
+	&& API_PROXY_TARGET=$(API_PROXY_TARGET) \
+		VITE_TLS_CERT=$(abspath $(WIZARD_TLS_CERT)) \
+		VITE_TLS_KEY=$(abspath $(WIZARD_TLS_KEY)) \
+		yarn run dev:stack
 
 dev: ## Build and run API (no-auth, enclave-mock); invoked by dev-hmr for the API process.
 	$(GO) build -ldflags="$(LDFLAGS)" -tags dev -o $(BINARY) .
