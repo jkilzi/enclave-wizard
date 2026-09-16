@@ -293,6 +293,18 @@ export interface GlobalConfig {
      */
     osacMetal3Enabled?: boolean;
     /**
+     * Host class identifier for Metal3 inventory (default: metal3)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacMetal3HostClass?: string;
+    /**
+     * Namespace where BareMetalHost CRs are located
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacMetal3Namespace?: string;
+    /**
      * OSAC deployment profile
      * @type {string}
      * @memberof GlobalConfig
@@ -537,6 +549,8 @@ export function GlobalConfigFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
         'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
         'osacMetal3Enabled': json['osacMetal3Enabled'] == null ? undefined : json['osacMetal3Enabled'],
+        'osacMetal3HostClass': json['osacMetal3HostClass'] == null ? undefined : json['osacMetal3HostClass'],
+        'osacMetal3Namespace': json['osacMetal3Namespace'] == null ? undefined : json['osacMetal3Namespace'],
         'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
         'osacProfilesList': json['osacProfilesList'] == null ? undefined : json['osacProfilesList'],
         'pullSecret': json['pullSecret'],
@@ -607,6 +621,8 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
         'osacDnsClass': value['osacDnsClass'],
         'osacDnsZone': value['osacDnsZone'],
         'osacMetal3Enabled': value['osacMetal3Enabled'],
+        'osacMetal3HostClass': value['osacMetal3HostClass'],
+        'osacMetal3Namespace': value['osacMetal3Namespace'],
         'osacProfile': value['osacProfile'],
         'osacProfilesList': value['osacProfilesList'],
         'pullSecret': value['pullSecret'],

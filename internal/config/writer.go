@@ -134,6 +134,12 @@ func buildOsacConfig(pc *models.PluginsConfig) *osacPluginConfig {
 	if pc.OsacMetal3Enabled != nil {
 		cfg.OsacMetal3Enabled = pc.OsacMetal3Enabled
 	}
+	if pc.OsacMetal3Namespace != nil {
+		cfg.OsacMetal3Namespace = *pc.OsacMetal3Namespace
+	}
+	if pc.OsacMetal3HostClass != nil {
+		cfg.OsacMetal3HostClass = *pc.OsacMetal3HostClass
+	}
 	if len(pc.ClusterFulfillmentConfig) > 0 {
 		cfg.ClusterFulfillmentConfig = pc.ClusterFulfillmentConfig
 	}
@@ -157,6 +163,8 @@ func pluginsConfigHasOsacYAML(pc *models.PluginsConfig) bool {
 		pc.OsacBcmHostClass != nil ||
 		pc.OsacBcmBmhNamespace != nil ||
 		pc.OsacMetal3Enabled != nil ||
+		pc.OsacMetal3Namespace != nil ||
+		pc.OsacMetal3HostClass != nil ||
 		len(pc.ClusterFulfillmentConfig) > 0
 }
 

@@ -1,5 +1,4 @@
 import { css } from "@emotion/css";
-import type { EnclaveConfig } from "@enclave-wizard-ui/api-client";
 import { EnclaveConfigToJSON } from "@enclave-wizard-ui/api-client";
 import {
   Alert,
@@ -72,6 +71,8 @@ export const OSAC_PLUGIN_KEYS = [
   "osacBcmHostClass",
   "osacBcmBmhNamespace",
   "osacMetal3Enabled",
+  "osacMetal3Namespace",
+  "osacMetal3HostClass",
   "clusterFulfillmentConfig",
 ];
 

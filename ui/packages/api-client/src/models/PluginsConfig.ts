@@ -176,6 +176,18 @@ export interface PluginsConfig {
      */
     osacMetal3Enabled?: boolean;
     /**
+     * Host class identifier for Metal3 inventory (default: metal3)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacMetal3HostClass?: string;
+    /**
+     * Namespace where BareMetalHost CRs are located
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacMetal3Namespace?: string;
+    /**
      * OSAC deployment profile
      * @type {string}
      * @memberof PluginsConfig
@@ -278,6 +290,8 @@ export function PluginsConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
         'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
         'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
         'osacMetal3Enabled': json['osacMetal3Enabled'] == null ? undefined : json['osacMetal3Enabled'],
+        'osacMetal3HostClass': json['osacMetal3HostClass'] == null ? undefined : json['osacMetal3HostClass'],
+        'osacMetal3Namespace': json['osacMetal3Namespace'] == null ? undefined : json['osacMetal3Namespace'],
         'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
         'osacProfilesList': json['osacProfilesList'] == null ? undefined : json['osacProfilesList'],
         'rhbkDbSize': json['rhbk_db_size'] == null ? undefined : json['rhbk_db_size'],
@@ -318,6 +332,8 @@ export function PluginsConfigToJSONTyped(value?: Omit<PluginsConfig, '$schema'> 
         'osacDnsClass': value['osacDnsClass'],
         'osacDnsZone': value['osacDnsZone'],
         'osacMetal3Enabled': value['osacMetal3Enabled'],
+        'osacMetal3HostClass': value['osacMetal3HostClass'],
+        'osacMetal3Namespace': value['osacMetal3Namespace'],
         'osacProfile': value['osacProfile'],
         'osacProfilesList': value['osacProfilesList'],
         'rhbk_db_size': value['rhbkDbSize'],
