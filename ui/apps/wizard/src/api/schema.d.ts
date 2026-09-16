@@ -898,6 +898,10 @@ export interface components {
             osacDnsZone?: string;
             /** @description Enable Metal3 inventory backend for bare metal fulfillment */
             osacMetal3Enabled?: boolean;
+            /** @description Host class identifier for Metal3 inventory (default: metal3) */
+            osacMetal3HostClass?: string;
+            /** @description Namespace where BareMetalHost CRs are located */
+            osacMetal3Namespace?: string;
             /**
              * @description OSAC deployment profile
              * @enum {string}
@@ -1154,6 +1158,10 @@ export interface components {
             osacDnsZone?: string;
             /** @description Enable Metal3 inventory backend for bare metal fulfillment */
             osacMetal3Enabled?: boolean;
+            /** @description Host class identifier for Metal3 inventory (default: metal3) */
+            osacMetal3HostClass?: string;
+            /** @description Namespace where BareMetalHost CRs are located */
+            osacMetal3Namespace?: string;
             /**
              * @description OSAC deployment profile
              * @enum {string}

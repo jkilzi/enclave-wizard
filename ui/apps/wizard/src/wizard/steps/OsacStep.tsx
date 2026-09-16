@@ -5,7 +5,11 @@ import {
   FileUpload,
   Flex,
   FlexItem,
+  Form,
   FormGroup,
+  FormGroupLabelHelp,
+  FormHelperText,
+  FormSection,
   HelperText,
   HelperTextItem,
   NumberInput,
@@ -15,7 +19,8 @@ import {
   TextInput,
   Title,
 } from "@patternfly/react-core";
-import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
+import { css as pfCss } from "@patternfly/react-styles";
+import formStyles from "@patternfly/react-styles/css/components/Form/form.mjs";
 import type React from "react";
 import { useCallback, useState } from "react";
 import { useFileUpload } from "../../api/useFileUpload.ts";
@@ -25,6 +30,65 @@ import { stepStyles } from "./stepStyles.ts";
 
 const BCM_PRODUCT_DOC =
   "https://docs.nvidia.com/base-command-manager/base-command-manager-user-guide/latest/overview.html";
+const METAL3_DOC =
+  "https://github.com/metal3-io/bare-metal-operator/blob/main/README.md";
+
+const INVENTORY_BACKEND_INTRO =
+  "Connect an external inventory source so bare metal as a service can discover servers and provision them. Only one source can be enabled at a time.";
+
+function InventoryBackendRadio({
+  id,
+  name,
+  label,
+  description,
+  isChecked,
+  onChange,
+  helpAriaLabel,
+  headerContent,
+  bodyContent,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  description: string;
+  isChecked: boolean;
+  onChange: () => void;
+  helpAriaLabel: string;
+  headerContent?: React.ReactNode;
+  bodyContent: React.ReactNode;
+}) {
+  const preventLabelToggle = (e: React.PointerEvent) => {
+    e.preventDefault();
+  };
+
+  return (
+    <Radio
+      id={id}
+      name={name}
+      label={
+        <>
+          {label}
+          <span
+            className={stepStyles.radioLabelHelp}
+            onPointerDown={preventLabelToggle}
+          >
+            <Popover headerContent={headerContent} bodyContent={bodyContent}>
+              <FormGroupLabelHelp
+                component="button"
+                type="button"
+                aria-label={helpAriaLabel}
+                onPointerDown={preventLabelToggle}
+              />
+            </Popover>
+          </span>
+        </>
+      }
+      description={description}
+      isChecked={isChecked}
+      onChange={onChange}
+    />
+  );
+}
 
 export const OsacStep: React.FC = () => {
   const { state, dispatch } = useWizard();
@@ -51,6 +115,10 @@ export const OsacStep: React.FC = () => {
     (globalData.osacBcmInsecureSkipVerify as boolean) ?? false;
   const bcmHostClass = (globalData.osacBcmHostClass as string) ?? "";
   const bcmBmhNamespace = (globalData.osacBcmBmhNamespace as string) ?? "";
+
+  const metal3Enabled = (globalData.osacMetal3Enabled as boolean) ?? false;
+  const metal3Namespace = (globalData.osacMetal3Namespace as string) ?? "";
+  const metal3HostClass = (globalData.osacMetal3HostClass as string) ?? "";
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [uploadFilename, setUploadFilename] = useState("");
@@ -80,12 +148,10 @@ export const OsacStep: React.FC = () => {
     setField("osacAapLicenseFile", "");
   }, [setField]);
 
-  const setBcmEnabled = useCallback(
-    (_e: unknown, checked: boolean) => {
-      setField("osacBcmEnabled", checked);
-      if (checked) {
-        setField("osacMetal3Enabled", false);
-      }
+  const setInventoryBackend = useCallback(
+    (backend: "none" | "bcm" | "metal3") => {
+      setField("osacBcmEnabled", backend === "bcm");
+      setField("osacMetal3Enabled", backend === "metal3");
     },
     [setField],
   );
@@ -94,11 +160,12 @@ export const OsacStep: React.FC = () => {
     state.showValidation &&
     bcmEnabled &&
     (!bcmUrl.trim() || !bcmUrl.startsWith("https://"));
-  const bcmCertError =
-    state.showValidation && bcmEnabled && !bcmCert.trim();
+  const bcmCertError = state.showValidation && bcmEnabled && !bcmCert.trim();
   const bcmKeyError = state.showValidation && bcmEnabled && !bcmKey.trim();
   const bcmNsError =
     state.showValidation && bcmEnabled && !bcmBmhNamespace.trim();
+  const metal3NsError =
+    state.showValidation && metal3Enabled && !metal3Namespace.trim();
 
   return (
     <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
@@ -111,119 +178,160 @@ export const OsacStep: React.FC = () => {
         </Content>
       </FlexItem>
 
-      {/* AAP License */}
       <FlexItem>
-        <FormGroup
-          label={
-            <span>
-              AAP subscription manifest{" "}
+        <Form isWidthLimited>
+          <FormGroup
+            label="AAP subscription manifest"
+            isRequired
+            fieldId="aap-license"
+            labelHelp={
               <Popover bodyContent="The OSAC platform uses Ansible Automation Platform (AAP) as its automation engine. AAP requires a Red Hat subscription manifest (manifest.zip) to operate. Download it from access.redhat.com under Subscription Allocations.">
-                <OutlinedQuestionCircleIcon
-                  style={{ cursor: "pointer", color: "#6a6e73" }}
-                />
+                <FormGroupLabelHelp aria-label="More information about the AAP subscription manifest" />
               </Popover>
-            </span>
-          }
-          isRequired
-          fieldId="aap-license"
-        >
-          <FileUpload
-            id="aap-license-upload"
-            type="dataURL"
-            filename={
-              uploadFilename ||
-              (aapLicenseFile ? aapLicenseFile.split("/").pop() : "")
             }
-            filenamePlaceholder="Upload your AAP license manifest.zip"
-            onFileInputChange={(_e, file) => handleFileUpload(_e, file)}
-            onClearClick={handleFileClear}
-            isLoading={uploading}
-            browseButtonText="Upload"
-            validated={
-              state.showValidation && !aapLicenseFile.trim()
-                ? "error"
-                : uploadError
+          >
+            <FileUpload
+              id="aap-license-upload"
+              type="dataURL"
+              filename={
+                uploadFilename ||
+                (aapLicenseFile ? aapLicenseFile.split("/").pop() : "")
+              }
+              filenamePlaceholder="Upload your AAP license manifest.zip"
+              onFileInputChange={(_e, file) => handleFileUpload(_e, file)}
+              onClearClick={handleFileClear}
+              isLoading={uploading}
+              browseButtonText="Upload"
+              validated={
+                state.showValidation && !aapLicenseFile.trim()
                   ? "error"
-                  : "default"
-            }
-          />
-          {uploadError && (
-            <HelperText>
-              <HelperTextItem variant="error">{uploadError}</HelperTextItem>
-            </HelperText>
-          )}
-          {aapLicenseFile && !uploadError && (
-            <HelperText>
-              <HelperTextItem variant="success">
-                Saved to: {aapLicenseFile}
-              </HelperTextItem>
-            </HelperText>
-          )}
-          {!aapLicenseFile && !uploadError && (
-            <HelperText>
-              <HelperTextItem>
-                Download manifest.zip from Red Hat Subscription Allocations
-                (access.redhat.com)
-              </HelperTextItem>
-            </HelperText>
-          )}
-        </FormGroup>
-      </FlexItem>
+                  : uploadError
+                    ? "error"
+                    : "default"
+              }
+            />
+            {uploadError && (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem variant="error">{uploadError}</HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+            {aapLicenseFile && !uploadError && (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem variant="success">
+                    Saved to: {aapLicenseFile}
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+            {!aapLicenseFile && !uploadError && (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem>
+                    Download manifest.zip from Red Hat Subscription Allocations
+                    (access.redhat.com)
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+          </FormGroup>
 
-      {showBcm && (
-        <FlexItem>
-          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
-            <FlexItem>
-              <Title headingLevel="h4" size="md">
-                Bare-metal provisioning
-              </Title>
-              <Content component="p" className={stepStyles.subtitle}>
-                Choose which system holds your physical server inventory.{" "}
-                <Popover
-                  headerContent="Bare metal inventory"
-                  bodyContent={
-                    <>
-                      <Content component="p">
-                        Connect an external inventory source so bare metal as a
-                        service can discover servers and provision them. Only one
-                        source can be enabled at a time.
-                      </Content>
-                      <Button
-                        variant="link"
-                        isInline
-                        component="a"
-                        href={BCM_PRODUCT_DOC}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        NVIDIA Base Command Manager documentation
-                      </Button>
-                    </>
-                  }
-                >
-                  <Button variant="link" isInline component="span">
-                    Learn more
-                  </Button>
-                </Popover>
-              </Content>
-            </FlexItem>
-            <FlexItem>
-              <FormGroup
-                label="Inventory backend"
-                fieldId="osac-inventory-sources"
+          {showBcm && (
+            <FormSection aria-labelledby="osac-bare-metal-provisioning-title">
+              <Flex
+                direction={{ default: "column" }}
+                gap={{ default: "gapXs" }}
               >
-                <Switch
-                  id="osac-bcm-enabled"
-                  label="NVIDIA Base Command Manager (BCM)"
-                  isChecked={bcmEnabled}
-                  onChange={setBcmEnabled}
-                />
+                <h4
+                  id="osac-bare-metal-provisioning-title"
+                  className={pfCss(formStyles.formSectionTitle)}
+                >
+                  Bare-metal provisioning
+                </h4>
+                <Content component="p" className={stepStyles.formSectionIntro}>
+                  {INVENTORY_BACKEND_INTRO}
+                </Content>
+              </Flex>
+              <FormGroup
+                fieldId="osac-inventory-sources"
+                role="radiogroup"
+                aria-label="Inventory backend"
+              >
+                <Flex
+                  direction={{ default: "column" }}
+                  gap={{ default: "gapMd" }}
+                >
+                  <InventoryBackendRadio
+                    id="osac-inventory-bcm"
+                    name="osac-inventory-backend"
+                    label="NVIDIA Base Command Manager (BCM)"
+                    description="BCM head node API with client certificate authentication"
+                    isChecked={bcmEnabled}
+                    onChange={() => setInventoryBackend("bcm")}
+                    helpAriaLabel="More information about NVIDIA Base Command Manager"
+                    headerContent="NVIDIA Base Command Manager"
+                    bodyContent={
+                      <>
+                        <Content component="p">
+                          Discover servers and provision hosts through the BCM
+                          head node JSON API (HTTPS, mTLS).
+                        </Content>
+                        <Button
+                          variant="link"
+                          isInline
+                          component="a"
+                          href={BCM_PRODUCT_DOC}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Learn more
+                        </Button>
+                      </>
+                    }
+                  />
+                  <InventoryBackendRadio
+                    id="osac-inventory-metal3"
+                    name="osac-inventory-backend"
+                    label="Metal3 (BareMetalHost)"
+                    description="Existing BareMetalHost CRs in an OpenShift namespace"
+                    isChecked={metal3Enabled}
+                    onChange={() => setInventoryBackend("metal3")}
+                    helpAriaLabel="More information about Metal3 bare-metal inventory"
+                    headerContent="Metal3 bare-metal operator"
+                    bodyContent={
+                      <>
+                        <Content component="p">
+                          Use BareMetalHost custom resources managed by the
+                          Metal3 bare-metal operator in your cluster.
+                        </Content>
+                        <Button
+                          variant="link"
+                          isInline
+                          component="a"
+                          href={METAL3_DOC}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Learn more
+                        </Button>
+                      </>
+                    }
+                  />
+                  <Radio
+                    id="osac-inventory-none"
+                    name="osac-inventory-backend"
+                    label="None"
+                    description="Do not connect an external inventory source in this wizard"
+                    isChecked={!bcmEnabled && !metal3Enabled}
+                    onChange={() => setInventoryBackend("none")}
+                  />
+                </Flex>
               </FormGroup>
-            </FlexItem>
 
-            {bcmEnabled && (
-              <>
-                <FlexItem>
+              {bcmEnabled && (
+                <>
                   <FormGroup
                     label="BCM API URL"
                     isRequired
@@ -236,15 +344,15 @@ export const OsacStep: React.FC = () => {
                       placeholder="https://bcm-head:8081"
                       validated={bcmUrlError ? "error" : "default"}
                     />
-                    <HelperText>
-                      <HelperTextItem>
-                        Head node JSON API endpoint (HTTPS, mTLS)
-                      </HelperTextItem>
-                    </HelperText>
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem>
+                          Head node JSON API endpoint (HTTPS, mTLS)
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
                   </FormGroup>
-                </FlexItem>
 
-                <FlexItem>
                   <CertificateField
                     label="BCM client certificate"
                     description="PEM client certificate for mTLS"
@@ -252,39 +360,37 @@ export const OsacStep: React.FC = () => {
                     onChange={(v) => setField("osacBcmCert", v)}
                   />
                   {bcmCertError && (
-                    <HelperText>
-                      <HelperTextItem variant="error">
-                        Client certificate is required
-                      </HelperTextItem>
-                    </HelperText>
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem variant="error">
+                          Client certificate is required
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
                   )}
-                </FlexItem>
 
-                <FlexItem>
                   <CertificateField
                     label="BCM client private key"
                     value={bcmKey}
                     onChange={(v) => setField("osacBcmKey", v)}
                   />
                   {bcmKeyError && (
-                    <HelperText>
-                      <HelperTextItem variant="error">
-                        Client private key is required
-                      </HelperTextItem>
-                    </HelperText>
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem variant="error">
+                          Client private key is required
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
                   )}
-                </FlexItem>
 
-                <FlexItem>
                   <CertificateField
                     label="BCM CA certificate (optional)"
                     description="Trust anchor for the BCM server certificate"
                     value={bcmCaCert}
                     onChange={(v) => setField("osacBcmCaCert", v)}
                   />
-                </FlexItem>
 
-                <FlexItem>
                   <FormGroup
                     label="BareMetalHost namespace"
                     isRequired
@@ -300,22 +406,16 @@ export const OsacStep: React.FC = () => {
                       validated={bcmNsError ? "error" : "default"}
                     />
                   </FormGroup>
-                </FlexItem>
 
-                <FlexItem>
                   <FormGroup label="Host class" fieldId="osac-bcm-host-class">
                     <TextInput
                       id="osac-bcm-host-class"
                       value={bcmHostClass}
-                      onChange={(_e, val) =>
-                        setField("osacBcmHostClass", val)
-                      }
+                      onChange={(_e, val) => setField("osacBcmHostClass", val)}
                       placeholder="bcm"
                     />
                   </FormGroup>
-                </FlexItem>
 
-                <FlexItem>
                   <FormGroup fieldId="osac-bcm-insecure">
                     <Switch
                       id="osac-bcm-insecure"
@@ -326,50 +426,89 @@ export const OsacStep: React.FC = () => {
                       }
                     />
                   </FormGroup>
-                </FlexItem>
-              </>
-            )}
-          </Flex>
-        </FlexItem>
-      )}
+                </>
+              )}
 
-      <FlexItem>
-        <ExpandableSection
-          toggleText={advancedOpen ? "Hide advanced settings" : "Advanced settings"}
-          isExpanded={advancedOpen}
-          onToggle={(_e, expanded) => setAdvancedOpen(expanded)}
-        >
-          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
-            {/* Fulfillment Database */}
-            <FlexItem>
-              <Title headingLevel="h4" size="md">
-                Fulfillment Database
-              </Title>
-              <FormGroup label="Database backend" fieldId="byo-database">
-                <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
-                  <Radio
-                    id="db-builtin"
-                    name="byo-database"
-                    label="Built-in PostgreSQL"
-                    description="Deploy a managed PostgreSQL instance (recommended for dev/test)"
-                    isChecked={!byoDatabase}
-                    onChange={() => setField("osacBYODatabase", false)}
-                  />
-                  <Radio
-                    id="db-external"
-                    name="byo-database"
-                    label="Bring your own database"
-                    description="Connect to an existing PostgreSQL instance"
-                    isChecked={byoDatabase}
-                    onChange={() => setField("osacBYODatabase", true)}
-                  />
-                </Flex>
+              {metal3Enabled && (
+                <>
+                  <FormGroup
+                    label="BareMetalHost namespace"
+                    isRequired
+                    fieldId="osac-metal3-namespace"
+                  >
+                    <TextInput
+                      id="osac-metal3-namespace"
+                      value={metal3Namespace}
+                      onChange={(_e, val) =>
+                        setField("osacMetal3Namespace", val)
+                      }
+                      placeholder="openshift-machine-api"
+                      validated={metal3NsError ? "error" : "default"}
+                    />
+                    <FormHelperText>
+                      <HelperText>
+                        <HelperTextItem>
+                          Namespace where existing BareMetalHost CRs are managed
+                        </HelperTextItem>
+                      </HelperText>
+                    </FormHelperText>
+                  </FormGroup>
+
+                  <FormGroup
+                    label="Host class"
+                    fieldId="osac-metal3-host-class"
+                  >
+                    <TextInput
+                      id="osac-metal3-host-class"
+                      value={metal3HostClass}
+                      onChange={(_e, val) =>
+                        setField("osacMetal3HostClass", val)
+                      }
+                      placeholder="metal3"
+                    />
+                  </FormGroup>
+                </>
+              )}
+            </FormSection>
+          )}
+
+          <ExpandableSection
+            toggleText={
+              advancedOpen ? "Hide advanced settings" : "Advanced settings"
+            }
+            isExpanded={advancedOpen}
+            onToggle={(_e, expanded) => setAdvancedOpen(expanded)}
+          >
+            <FormSection title="Fulfillment database" titleElement="h4">
+              <FormGroup
+                label="Database backend"
+                fieldId="byo-database"
+                role="radiogroup"
+              >
+                <Radio
+                  id="db-builtin"
+                  name="byo-database"
+                  label="Built-in PostgreSQL"
+                  description="Deploy a managed PostgreSQL instance (recommended for dev/test)"
+                  isChecked={!byoDatabase}
+                  onChange={() => setField("osacBYODatabase", false)}
+                />
+                <Radio
+                  id="db-external"
+                  name="byo-database"
+                  label="Bring your own database"
+                  description="Connect to an existing PostgreSQL instance"
+                  isChecked={byoDatabase}
+                  onChange={() => setField("osacBYODatabase", true)}
+                />
               </FormGroup>
-            </FlexItem>
 
-            {byoDatabase && (
-              <FlexItem>
-                <FormGroup label="Database URL" isRequired fieldId="database-url">
+              {byoDatabase && (
+                <FormGroup
+                  label="Database URL"
+                  isRequired
+                  fieldId="database-url"
+                >
                   <TextInput
                     id="database-url"
                     value={databaseUrl}
@@ -382,17 +521,10 @@ export const OsacStep: React.FC = () => {
                     }
                   />
                 </FormGroup>
-              </FlexItem>
-            )}
+              )}
+            </FormSection>
 
-            {/* Identity Provider (RHBK/Keycloak) */}
-            <FlexItem>
-              <Title headingLevel="h4" size="md">
-                Identity Provider (Keycloak)
-              </Title>
-            </FlexItem>
-
-            <FlexItem>
+            <FormSection title="Identity provider (Keycloak)" titleElement="h4">
               <FormGroup label="Keycloak replicas" fieldId="rhbk-instances">
                 <NumberInput
                   id="rhbk-instances"
@@ -413,16 +545,19 @@ export const OsacStep: React.FC = () => {
                     if (v >= 1 && v <= 5) setField("rhbk_instances", v);
                   }}
                 />
-                <HelperText>
-                  <HelperTextItem>
-                    Use 3+ for production high availability
-                  </HelperTextItem>
-                </HelperText>
+                <FormHelperText>
+                  <HelperText>
+                    <HelperTextItem>
+                      Use 3+ for production high availability
+                    </HelperTextItem>
+                  </HelperText>
+                </FormHelperText>
               </FormGroup>
-            </FlexItem>
 
-            <FlexItem>
-              <FormGroup label="Keycloak database" fieldId="rhbk-deploy-database">
+              <FormGroup
+                label="Keycloak database"
+                fieldId="rhbk-deploy-database"
+              >
                 <Switch
                   id="rhbk-deploy-database"
                   label="Deploy built-in PostgreSQL for Keycloak"
@@ -433,27 +568,30 @@ export const OsacStep: React.FC = () => {
                   }
                 />
               </FormGroup>
-            </FlexItem>
 
-            {rhbkDeployDatabase && (
-              <FlexItem>
-                <FormGroup label="Keycloak database size" fieldId="rhbk-db-size">
+              {rhbkDeployDatabase && (
+                <FormGroup
+                  label="Keycloak database size"
+                  fieldId="rhbk-db-size"
+                >
                   <TextInput
                     id="rhbk-db-size"
                     value={rhbkDbSize}
                     onChange={(_e, val) => setField("rhbk_db_size", val)}
                     placeholder="5Gi"
                   />
-                  <HelperText>
-                    <HelperTextItem>
-                      PVC size for the Keycloak PostgreSQL volume
-                    </HelperTextItem>
-                  </HelperText>
+                  <FormHelperText>
+                    <HelperText>
+                      <HelperTextItem>
+                        PVC size for the Keycloak PostgreSQL volume
+                      </HelperTextItem>
+                    </HelperText>
+                  </FormHelperText>
                 </FormGroup>
-              </FlexItem>
-            )}
-          </Flex>
-        </ExpandableSection>
+              )}
+            </FormSection>
+          </ExpandableSection>
+        </Form>
       </FlexItem>
     </Flex>
   );

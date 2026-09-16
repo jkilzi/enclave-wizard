@@ -21,26 +21,10 @@ export function validateOsacBcmFields(
     }
   };
 
-  require(
-    "osacBcmUrl",
-    "BCM API URL",
-    "BCM API URL is required (https://…)",
-  );
-  require(
-    "osacBcmCert",
-    "BCM client certificate",
-    "BCM client certificate (PEM) is required",
-  );
-  require(
-    "osacBcmKey",
-    "BCM client key",
-    "BCM client private key (PEM) is required",
-  );
-  require(
-    "osacBcmBmhNamespace",
-    "BareMetalHost namespace",
-    "Namespace for BareMetalHost CRs is required",
-  );
+  require("osacBcmUrl", "BCM API URL", "BCM API URL is required (https://…)");
+  require("osacBcmCert", "BCM client certificate", "BCM client certificate (PEM) is required");
+  require("osacBcmKey", "BCM client key", "BCM client private key (PEM) is required");
+  require("osacBcmBmhNamespace", "BareMetalHost namespace", "Namespace for BareMetalHost CRs is required");
 
   const url = (globalData.osacBcmUrl as string) ?? "";
   if (url.trim() && !url.startsWith("https://")) {
@@ -48,6 +32,28 @@ export function validateOsacBcmFields(
       path: "global.osacBcmUrl",
       label: "BCM API URL",
       message: "BCM API URL must start with https://",
+    });
+  }
+
+  return errors;
+}
+
+export function validateOsacMetal3Fields(
+  globalData: Record<string, unknown>,
+  showValidation: boolean,
+): FieldValidationError[] {
+  if (!showValidation) return [];
+
+  const metal3Enabled = globalData.osacMetal3Enabled === true;
+  if (!metal3Enabled) return [];
+
+  const errors: FieldValidationError[] = [];
+  const ns = (globalData.osacMetal3Namespace as string) ?? "";
+  if (!ns.trim()) {
+    errors.push({
+      path: "global.osacMetal3Namespace",
+      label: "BareMetalHost namespace",
+      message: "Namespace for BareMetalHost CRs is required",
     });
   }
 

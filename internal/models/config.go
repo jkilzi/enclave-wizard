@@ -62,32 +62,34 @@ type StorageConfig struct {
 
 // Plugins
 type PluginsConfig struct {
-	EnabledPlugins           []string            `json:"enabled_plugins" yaml:"enabled_plugins" doc:"Plugins to deploy"`
-	OsacProfile              *string             `json:"osacProfile,omitempty" yaml:"osacProfile,omitempty" doc:"OSAC deployment profile" enum:"development,caas,vmaas,bmaas"`
-	OsacAapLicenseFile       *string             `json:"osacAapLicenseFile,omitempty" yaml:"osacAapLicenseFile,omitempty" doc:"Path to AAP license manifest.zip on the landing zone"`
-	OsacBYODatabase          *bool               `json:"osacBYODatabase,omitempty" yaml:"osacBYODatabase,omitempty" doc:"Use external PostgreSQL instead of built-in"`
-	OsacDatabaseUrl          *string             `json:"osacDatabaseUrl,omitempty" yaml:"osacDatabaseUrl,omitempty" doc:"PostgreSQL connection URL when using BYO database"`
-	OsacDnsClass             *string             `json:"osacDnsClass,omitempty" yaml:"osacDnsClass,omitempty" doc:"Fully-qualified Ansible role name of the DNS driver" enum:"dns.route53.dns"`
-	OsacDnsZone              *string             `json:"osacDnsZone,omitempty" yaml:"osacDnsZone,omitempty" doc:"DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)" pattern:"^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.?$"`
-	OsacProfilesList         []string            `json:"osacProfilesList,omitempty" yaml:"osacProfilesList,omitempty" doc:"List of enabled service profiles: vmaas, caas, bmaas" minItems:"1"`
-	OsacBcmEnabled           *bool               `json:"osacBcmEnabled,omitempty" yaml:"osacBcmEnabled,omitempty" doc:"Enable BCM inventory backend for bare metal fulfillment"`
-	OsacBcmUrl               *string             `json:"osacBcmUrl,omitempty" yaml:"osacBcmUrl,omitempty" doc:"BCM head node API endpoint (e.g. https://bcm-head:8081)" minLength:"1" pattern:"^https://"`
-	OsacBcmCert              *string             `json:"osacBcmCert,omitempty" yaml:"osacBcmCert,omitempty" doc:"PEM-encoded client certificate for BCM mTLS authentication" minLength:"1"`
-	OsacBcmKey               *string             `json:"osacBcmKey,omitempty" yaml:"osacBcmKey,omitempty" doc:"PEM-encoded client private key for BCM mTLS authentication" minLength:"1"`
-	OsacBcmCaCert            *string             `json:"osacBcmCaCert,omitempty" yaml:"osacBcmCaCert,omitempty" doc:"PEM-encoded CA certificate for verifying BCM server cert (optional)" minLength:"1"`
-	OsacBcmInsecureSkipVerify *bool              `json:"osacBcmInsecureSkipVerify,omitempty" yaml:"osacBcmInsecureSkipVerify,omitempty" doc:"Skip TLS verification of BCM server certificate (test environments only)"`
-	OsacBcmHostClass         *string             `json:"osacBcmHostClass,omitempty" yaml:"osacBcmHostClass,omitempty" doc:"Host class identifier for BCM inventory (default: bcm)" minLength:"1"`
-	OsacBcmBmhNamespace      *string             `json:"osacBcmBmhNamespace,omitempty" yaml:"osacBcmBmhNamespace,omitempty" doc:"Namespace where BareMetalHost CRs are created for Metal3 power management" minLength:"1"`
-	OsacMetal3Enabled        *bool               `json:"osacMetal3Enabled,omitempty" yaml:"osacMetal3Enabled,omitempty" doc:"Enable Metal3 inventory backend for bare metal fulfillment"`
-	RhbkInstances            *int                `json:"rhbk_instances,omitempty" yaml:"rhbk_instances,omitempty" doc:"Number of Keycloak replicas" minimum:"1"`
-	RhbkDeployDatabase       *bool               `json:"rhbk_deploy_database,omitempty" yaml:"rhbk_deploy_database,omitempty" doc:"Deploy PostgreSQL alongside Keycloak"`
-	RhbkDbSize               *string             `json:"rhbk_db_size,omitempty" yaml:"rhbk_db_size,omitempty" doc:"PVC size for Keycloak PostgreSQL"`
-	ClusterFulfillmentConfig map[string]string   `json:"clusterFulfillmentConfig,omitempty" yaml:"clusterFulfillmentConfig,omitempty" doc:"Cluster fulfillment configuration (passed through to osac-installer Helm values)"`
-	LVMSConfig               *LVMSConfig         `json:"lvmsDefaults,omitempty" yaml:"lvmsDefaults,omitempty" doc:"LVMS deployment configuration"`
-	ODFConfig                *ODFConfig          `json:"odfDefaults,omitempty" yaml:"odfDefaults,omitempty" doc:"ODF deployment configuration"`
-	VASTConfig               *VASTConfig         `json:"vastDefaults,omitempty" yaml:"vastDefaults,omitempty" doc:"VAST CSI deployment defaults"`
-	AAPConfig                *AAPConfig          `json:"aapDefaults,omitempty" yaml:"aapDefaults,omitempty" doc:"AAP deployment configuration"`
-	TrustManagerConfig       *TrustManagerConfig `json:"trustManagerDefaults,omitempty" yaml:"trustManagerDefaults,omitempty" doc:"Trust-manager CA issuer configuration"`
+	EnabledPlugins            []string            `json:"enabled_plugins" yaml:"enabled_plugins" doc:"Plugins to deploy"`
+	OsacProfile               *string             `json:"osacProfile,omitempty" yaml:"osacProfile,omitempty" doc:"OSAC deployment profile" enum:"development,caas,vmaas,bmaas"`
+	OsacAapLicenseFile        *string             `json:"osacAapLicenseFile,omitempty" yaml:"osacAapLicenseFile,omitempty" doc:"Path to AAP license manifest.zip on the landing zone"`
+	OsacBYODatabase           *bool               `json:"osacBYODatabase,omitempty" yaml:"osacBYODatabase,omitempty" doc:"Use external PostgreSQL instead of built-in"`
+	OsacDatabaseUrl           *string             `json:"osacDatabaseUrl,omitempty" yaml:"osacDatabaseUrl,omitempty" doc:"PostgreSQL connection URL when using BYO database"`
+	OsacDnsClass              *string             `json:"osacDnsClass,omitempty" yaml:"osacDnsClass,omitempty" doc:"Fully-qualified Ansible role name of the DNS driver" enum:"dns.route53.dns"`
+	OsacDnsZone               *string             `json:"osacDnsZone,omitempty" yaml:"osacDnsZone,omitempty" doc:"DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)" pattern:"^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.?$"`
+	OsacProfilesList          []string            `json:"osacProfilesList,omitempty" yaml:"osacProfilesList,omitempty" doc:"List of enabled service profiles: vmaas, caas, bmaas" minItems:"1"`
+	OsacBcmEnabled            *bool               `json:"osacBcmEnabled,omitempty" yaml:"osacBcmEnabled,omitempty" doc:"Enable BCM inventory backend for bare metal fulfillment"`
+	OsacBcmUrl                *string             `json:"osacBcmUrl,omitempty" yaml:"osacBcmUrl,omitempty" doc:"BCM head node API endpoint (e.g. https://bcm-head:8081)" minLength:"1" pattern:"^https://"`
+	OsacBcmCert               *string             `json:"osacBcmCert,omitempty" yaml:"osacBcmCert,omitempty" doc:"PEM-encoded client certificate for BCM mTLS authentication" minLength:"1"`
+	OsacBcmKey                *string             `json:"osacBcmKey,omitempty" yaml:"osacBcmKey,omitempty" doc:"PEM-encoded client private key for BCM mTLS authentication" minLength:"1"`
+	OsacBcmCaCert             *string             `json:"osacBcmCaCert,omitempty" yaml:"osacBcmCaCert,omitempty" doc:"PEM-encoded CA certificate for verifying BCM server cert (optional)" minLength:"1"`
+	OsacBcmInsecureSkipVerify *bool               `json:"osacBcmInsecureSkipVerify,omitempty" yaml:"osacBcmInsecureSkipVerify,omitempty" doc:"Skip TLS verification of BCM server certificate (test environments only)"`
+	OsacBcmHostClass          *string             `json:"osacBcmHostClass,omitempty" yaml:"osacBcmHostClass,omitempty" doc:"Host class identifier for BCM inventory (default: bcm)" minLength:"1"`
+	OsacBcmBmhNamespace       *string             `json:"osacBcmBmhNamespace,omitempty" yaml:"osacBcmBmhNamespace,omitempty" doc:"Namespace where BareMetalHost CRs are created for Metal3 power management" minLength:"1"`
+	OsacMetal3Enabled         *bool               `json:"osacMetal3Enabled,omitempty" yaml:"osacMetal3Enabled,omitempty" doc:"Enable Metal3 inventory backend for bare metal fulfillment"`
+	OsacMetal3Namespace       *string             `json:"osacMetal3Namespace,omitempty" yaml:"osacMetal3Namespace,omitempty" doc:"Namespace where BareMetalHost CRs are located" minLength:"1"`
+	OsacMetal3HostClass       *string             `json:"osacMetal3HostClass,omitempty" yaml:"osacMetal3HostClass,omitempty" doc:"Host class identifier for Metal3 inventory (default: metal3)" minLength:"1"`
+	RhbkInstances             *int                `json:"rhbk_instances,omitempty" yaml:"rhbk_instances,omitempty" doc:"Number of Keycloak replicas" minimum:"1"`
+	RhbkDeployDatabase        *bool               `json:"rhbk_deploy_database,omitempty" yaml:"rhbk_deploy_database,omitempty" doc:"Deploy PostgreSQL alongside Keycloak"`
+	RhbkDbSize                *string             `json:"rhbk_db_size,omitempty" yaml:"rhbk_db_size,omitempty" doc:"PVC size for Keycloak PostgreSQL"`
+	ClusterFulfillmentConfig  map[string]string   `json:"clusterFulfillmentConfig,omitempty" yaml:"clusterFulfillmentConfig,omitempty" doc:"Cluster fulfillment configuration (passed through to osac-installer Helm values)"`
+	LVMSConfig                *LVMSConfig         `json:"lvmsDefaults,omitempty" yaml:"lvmsDefaults,omitempty" doc:"LVMS deployment configuration"`
+	ODFConfig                 *ODFConfig          `json:"odfDefaults,omitempty" yaml:"odfDefaults,omitempty" doc:"ODF deployment configuration"`
+	VASTConfig                *VASTConfig         `json:"vastDefaults,omitempty" yaml:"vastDefaults,omitempty" doc:"VAST CSI deployment defaults"`
+	AAPConfig                 *AAPConfig          `json:"aapDefaults,omitempty" yaml:"aapDefaults,omitempty" doc:"AAP deployment configuration"`
+	TrustManagerConfig        *TrustManagerConfig `json:"trustManagerDefaults,omitempty" yaml:"trustManagerDefaults,omitempty" doc:"Trust-manager CA issuer configuration"`
 }
 
 type GlobalConfig struct {

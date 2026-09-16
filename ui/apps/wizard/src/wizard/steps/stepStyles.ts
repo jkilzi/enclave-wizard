@@ -14,6 +14,11 @@ export const stepStyles = {
     color: #6a6e73;
   `,
 
+  formSectionIntro: css`
+    margin: 0;
+    color: #6a6e73;
+  `,
+
   removeButton: css`
     margin-top: 2rem;
   `,
@@ -53,5 +58,11 @@ export const stepStyles = {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.25rem;
+  `,
+
+  radioLabelHelp: css`
+    display: inline-block;
+    margin-inline-start: var(--pf-t--global--spacer--xs);
+    vertical-align: middle;
   `,
 };

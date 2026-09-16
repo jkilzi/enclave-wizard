@@ -455,6 +455,41 @@ func TestWriteAllThenReadAll_OsacBcmFieldsRoundTrip(t *testing.T) {
 	}
 }
 
+func TestWriteAllThenReadAll_OsacMetal3FieldsRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	enabled := true
+	ns := "openshift-machine-api"
+	hostClass := "metal3"
+	profiles := []string{"bmaas"}
+
+	licensePath := "/opt/manifest.zip"
+	want := &models.EnclaveConfig{}
+	want.Global.OsacAapLicenseFile = &licensePath
+	want.Global.OsacProfilesList = profiles
+	want.Global.OsacMetal3Enabled = &enabled
+	want.Global.OsacMetal3Namespace = &ns
+	want.Global.OsacMetal3HostClass = &hostClass
+
+	if err := NewWriter(root).WriteAll(want); err != nil {
+		t.Fatalf("WriteAll: %v", err)
+	}
+
+	got, err := NewReader(root).ReadAll()
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+
+	if got.Global.OsacMetal3Enabled == nil || !*got.Global.OsacMetal3Enabled {
+		t.Errorf("OsacMetal3Enabled: want true, got %v", got.Global.OsacMetal3Enabled)
+	}
+	if got.Global.OsacMetal3Namespace == nil || *got.Global.OsacMetal3Namespace != ns {
+		t.Errorf("OsacMetal3Namespace: want %q, got %v", ns, got.Global.OsacMetal3Namespace)
+	}
+	if got.Global.OsacMetal3HostClass == nil || *got.Global.OsacMetal3HostClass != hostClass {
+		t.Errorf("OsacMetal3HostClass: want %q, got %v", hostClass, got.Global.OsacMetal3HostClass)
+	}
+}
+
 func TestWriteAllThenReadAll_OsacDnsFieldsRoundTrip(t *testing.T) {
 	root := t.TempDir()
 	dnsClass := "dns.route53.dns"

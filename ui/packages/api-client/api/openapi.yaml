@@ -573,6 +573,14 @@ components:
         osacMetal3Enabled:
           description: Enable Metal3 inventory backend for bare metal fulfillment
           type: boolean
+        osacMetal3HostClass:
+          description: "Host class identifier for Metal3 inventory (default: metal3)"
+          minLength: 1
+          type: string
+        osacMetal3Namespace:
+          description: Namespace where BareMetalHost CRs are located
+          minLength: 1
+          type: string
         osacProfile:
           description: OSAC deployment profile
           enum:
@@ -1045,6 +1053,14 @@ components:
         osacMetal3Enabled:
           description: Enable Metal3 inventory backend for bare metal fulfillment
           type: boolean
+        osacMetal3HostClass:
+          description: "Host class identifier for Metal3 inventory (default: metal3)"
+          minLength: 1
+          type: string
+        osacMetal3Namespace:
+          description: Namespace where BareMetalHost CRs are located
+          minLength: 1
+          type: string
         osacProfile:
           description: OSAC deployment profile
           enum:

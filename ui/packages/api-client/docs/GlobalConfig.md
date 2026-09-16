@@ -42,6 +42,8 @@ Name | Type
 `osacDnsClass` | string
 `osacDnsZone` | string
 `osacMetal3Enabled` | boolean
+`osacMetal3HostClass` | string
+`osacMetal3Namespace` | string
 `osacProfile` | string
 `osacProfilesList` | Array&lt;string&gt;
 `pullSecret` | any
@@ -106,6 +108,8 @@ const example = {
   "osacDnsClass": null,
   "osacDnsZone": null,
   "osacMetal3Enabled": null,
+  "osacMetal3HostClass": null,
+  "osacMetal3Namespace": null,
   "osacProfile": null,
   "osacProfilesList": null,
   "pullSecret": null,
