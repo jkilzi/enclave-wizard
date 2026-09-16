@@ -38,6 +38,16 @@ export function validateOsacBcmFields(
   return errors;
 }
 
+/** OSAC inventory checks for wizard navigation (Continue). Not gated on UI showValidation. */
+export function validateOsacInventoryBackends(
+  globalData: Record<string, unknown>,
+): FieldValidationError[] {
+  return [
+    ...validateOsacBcmFields(globalData, true),
+    ...validateOsacMetal3Fields(globalData, true),
+  ];
+}
+
 export function validateOsacMetal3Fields(
   globalData: Record<string, unknown>,
   showValidation: boolean,

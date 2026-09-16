@@ -32,8 +32,7 @@ import { CatalogProvider } from "./contexts/CatalogContext.tsx";
 import { isValidDnsZone } from "./dnsZone.ts";
 import { useWizardInit } from "./hooks/useWizardInit.ts";
 import {
-  validateOsacBcmFields,
-  validateOsacMetal3Fields,
+  validateOsacInventoryBackends,
 } from "./osacBcmValidation.ts";
 import { STEP_REQUIRED_FIELDS } from "./stepFields.ts";
 import { AAPStep } from "./steps/AAPStep.tsx";
@@ -545,10 +544,7 @@ function WizardContent(): React.ReactElement {
           message: "AAP subscription manifest is required for OSAC",
         });
       }
-      errors.push(...validateOsacBcmFields(globalData, state.showValidation));
-      errors.push(
-        ...validateOsacMetal3Fields(globalData, state.showValidation),
-      );
+      errors.push(...validateOsacInventoryBackends(globalData));
     }
 
     if (currentSubStepId === "caas") {
@@ -610,7 +606,7 @@ function WizardContent(): React.ReactElement {
     }
 
     return errors;
-  }, [currentSubStepId, state.schema, state.configData, state.showValidation]);
+  }, [currentSubStepId, state.schema, state.configData]);
 
   const goNext = useCallback(() => {
     if (isConfigure) {

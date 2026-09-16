@@ -272,6 +272,38 @@ describe("useStepValidation custom rules", () => {
       );
       expect(osacErrors).toHaveLength(0);
     });
+
+    it("blocks Continue when Metal3 is enabled without a namespace", () => {
+      mockConfigState = {
+        configData: {
+          global: {
+            osacAapLicenseFile: "/path/to/manifest.zip",
+            osacMetal3Enabled: true,
+          },
+        },
+      };
+      mockCatalogState = { schema: MOCK_SCHEMA };
+      const { result } = renderValidation("osac");
+      const errors = result.current();
+      expect(errors.some((e) => e.path === "global.osacMetal3Namespace")).toBe(
+        true,
+      );
+    });
+
+    it("blocks Continue when BCM is enabled without connection fields", () => {
+      mockConfigState = {
+        configData: {
+          global: {
+            osacAapLicenseFile: "/path/to/manifest.zip",
+            osacBcmEnabled: true,
+          },
+        },
+      };
+      mockCatalogState = { schema: MOCK_SCHEMA };
+      const { result } = renderValidation("osac");
+      const errors = result.current();
+      expect(errors.some((e) => e.path === "global.osacBcmUrl")).toBe(true);
+    });
   });
 
   describe("AAP license validation", () => {
