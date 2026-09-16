@@ -13,7 +13,7 @@ LDFLAGS := -w -s -X main.wizardVersion=$(WIZARD_VERSION) -X main.enclaveVersion=
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9\/-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-.PHONY: build build-linux build-ui run test lint clean tidy deploy teardown generate generate-schema enclave-mock clean-enclave-mock run-mock preview deploy-preview bm-emulation bm-emulation-config bm-teardown test-config demo-build demo-start demo-stop demo-restart demo
+.PHONY: build build-linux build-ui run test lint clean tidy deploy teardown generate generate-schema enclave-mock clean-enclave-mock run-mock preview deploy-preview bm-emulation bm-emulation-config bm-teardown test-config demo-build demo-start demo-stop demo-restart demo dev-hmr
 
 ##@ Build
 
@@ -157,11 +157,21 @@ run-mock: build
 	./$(BINARY) --enclave-dir enclave-mock \
 		--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key
 
-dev: build-ui ## Build and run dev mode (no-auth, enclave-mock, foreground).
+API_PROXY_TARGET ?= https://127.0.0.1:3443
+# Vite uses :3001; wizard HTTP→HTTPS redirect must use a different port.
+WIZARD_HTTP_PORT ?= 3080
+WIZARD_DEV_FLAGS := --no-auth --enclave-dir enclave-mock \
+	--password-file /tmp/enclave-wizard-dev-pass \
+	--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key \
+	--http-port $(WIZARD_HTTP_PORT)
+
+dev-hmr: ## Run API + Vite (HMR). On macOS use http://localhost:3001 after port forward.
+	cd ui && yarn install
+	cd ui && API_PROXY_TARGET=$(API_PROXY_TARGET) yarn run dev:stack
+
+dev: ## Build and run API (no-auth, enclave-mock); invoked by dev-hmr for the API process.
 	$(GO) build -ldflags="$(LDFLAGS)" -tags dev -o $(BINARY) .
-	./$(BINARY) --no-auth --enclave-dir enclave-mock \
-		--password-file /tmp/enclave-wizard-dev-pass \
-		--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key
+	./$(BINARY) $(WIZARD_DEV_FLAGS)
 
 ##@ Demo Environment
 
