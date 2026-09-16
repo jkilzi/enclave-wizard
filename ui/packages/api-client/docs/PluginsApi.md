@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**getConfigPlugins**](PluginsApi.md#getconfigplugins) | **GET** /api/v1/config/plugins | Load Enabled plugins configuration |
+| [**getPluginSchema**](PluginsApi.md#getpluginschema) | **GET** /api/v1/plugins/{name}/schema | Get plugin config schema |
 | [**listPlugins**](PluginsApi.md#listplugins) | **GET** /api/v1/plugins | List available plugins |
 | [**validatePluginCombination**](PluginsApi.md#validateplugincombination) | **POST** /api/v1/plugins/validate | Validate plugin combination |
 | [**writeConfigPlugins**](PluginsApi.md#writeconfigplugins) | **PUT** /api/v1/config/plugins | Update Enabled plugins configuration |
@@ -49,6 +50,74 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**PluginsConfig**](PluginsConfig.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`, `application/problem+json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **0** | Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getPluginSchema
+
+> any getPluginSchema(name)
+
+Get plugin config schema
+
+Returns the JSON schema for the named plugin\&#39;s configuration. Used by the frontend for dynamic form rendering.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  PluginsApi,
+} from '@enclave-wizard-ui/api-client';
+import type { GetPluginSchemaRequest } from '@enclave-wizard-ui/api-client';
+
+async function example() {
+  console.log("🚀 Testing @enclave-wizard-ui/api-client SDK...");
+  const api = new PluginsApi();
+
+  const body = {
+    // string | Plugin name
+    name: name_example,
+  } satisfies GetPluginSchemaRequest;
+
+  try {
+    const data = await api.getPluginSchema(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **name** | `string` | Plugin name | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
 
 ### Authorization
 

@@ -88,6 +88,36 @@ func (r *Reader) mergePluginConfigs(cfg *models.EnclaveConfig) {
 		if len(osac.ClusterFulfillmentConfig) > 0 {
 			cfg.Global.ClusterFulfillmentConfig = osac.ClusterFulfillmentConfig
 		}
+		if len(osac.OsacProfilesList) > 0 {
+			cfg.Global.OsacProfilesList = osac.OsacProfilesList
+		}
+		if osac.OsacBcmEnabled != nil {
+			cfg.Global.OsacBcmEnabled = osac.OsacBcmEnabled
+		}
+		if osac.OsacBcmUrl != "" {
+			cfg.Global.OsacBcmUrl = &osac.OsacBcmUrl
+		}
+		if osac.OsacBcmCert != "" {
+			cfg.Global.OsacBcmCert = &osac.OsacBcmCert
+		}
+		if osac.OsacBcmKey != "" {
+			cfg.Global.OsacBcmKey = &osac.OsacBcmKey
+		}
+		if osac.OsacBcmCaCert != "" {
+			cfg.Global.OsacBcmCaCert = &osac.OsacBcmCaCert
+		}
+		if osac.OsacBcmInsecureSkipVerify != nil {
+			cfg.Global.OsacBcmInsecureSkipVerify = osac.OsacBcmInsecureSkipVerify
+		}
+		if osac.OsacBcmHostClass != "" {
+			cfg.Global.OsacBcmHostClass = &osac.OsacBcmHostClass
+		}
+		if osac.OsacBcmBmhNamespace != "" {
+			cfg.Global.OsacBcmBmhNamespace = &osac.OsacBcmBmhNamespace
+		}
+		if osac.OsacMetal3Enabled != nil {
+			cfg.Global.OsacMetal3Enabled = osac.OsacMetal3Enabled
+		}
 	}
 
 	rhbk, _ := readYAMLFile[rhbkPluginConfig](filepath.Join(pluginsDir, "rhbk.yaml"))
@@ -111,6 +141,16 @@ type osacPluginConfig struct {
 	OsacDatabaseUrl          string            `yaml:"osacDatabaseUrl,omitempty"`
 	OsacDnsClass             string            `yaml:"osacDnsClass,omitempty"`
 	OsacDnsZone              string            `yaml:"osacDnsZone,omitempty"`
+	OsacProfilesList         []string          `yaml:"osacProfilesList,omitempty"`
+	OsacBcmEnabled           *bool             `yaml:"osacBcmEnabled,omitempty"`
+	OsacBcmUrl               string            `yaml:"osacBcmUrl,omitempty"`
+	OsacBcmCert              string            `yaml:"osacBcmCert,omitempty"`
+	OsacBcmKey               string            `yaml:"osacBcmKey,omitempty"`
+	OsacBcmCaCert            string            `yaml:"osacBcmCaCert,omitempty"`
+	OsacBcmInsecureSkipVerify *bool            `yaml:"osacBcmInsecureSkipVerify,omitempty"`
+	OsacBcmHostClass         string            `yaml:"osacBcmHostClass,omitempty"`
+	OsacBcmBmhNamespace      string            `yaml:"osacBcmBmhNamespace,omitempty"`
+	OsacMetal3Enabled        *bool             `yaml:"osacMetal3Enabled,omitempty"`
 	ClusterFulfillmentConfig map[string]string `yaml:"clusterFulfillmentConfig,omitempty"`
 }
 

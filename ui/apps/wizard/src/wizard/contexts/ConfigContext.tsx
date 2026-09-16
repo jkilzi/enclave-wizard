@@ -107,6 +107,14 @@ export function configReducer(
         ["global", "osacProfile"],
         osacProfile || undefined,
       );
+      const profilesList = selected.map((f) => f.id);
+      if (profilesList.length > 0) {
+        updated = setNestedField(
+          updated,
+          ["global", "osacProfilesList"],
+          profilesList,
+        );
+      }
       return {
         ...state,
         selectedFlavors: nextFlavors,

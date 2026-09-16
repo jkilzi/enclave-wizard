@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime.js';
+import type { AAPConfig } from './AAPConfig.js';
+import {
+    AAPConfigFromJSON,
+    AAPConfigFromJSONTyped,
+    AAPConfigToJSON,
+    AAPConfigToJSONTyped,
+} from './AAPConfig.js';
 import type { VASTConfig } from './VASTConfig.js';
 import {
     VASTConfigFromJSON,
@@ -34,6 +41,13 @@ import {
     LVMSConfigToJSON,
     LVMSConfigToJSONTyped,
 } from './LVMSConfig.js';
+import type { TrustManagerConfig } from './TrustManagerConfig.js';
+import {
+    TrustManagerConfigFromJSON,
+    TrustManagerConfigFromJSONTyped,
+    TrustManagerConfigToJSON,
+    TrustManagerConfigToJSONTyped,
+} from './TrustManagerConfig.js';
 
 /**
  * 
@@ -48,11 +62,23 @@ export interface PluginsConfig {
      */
     readonly $schema?: string;
     /**
+     * AAP deployment configuration
+     * @type {AAPConfig}
+     * @memberof PluginsConfig
+     */
+    aapDefaults?: AAPConfig;
+    /**
+     * Cluster fulfillment configuration (passed through to osac-installer Helm values)
+     * @type {{ [key: string]: string; }}
+     * @memberof PluginsConfig
+     */
+    clusterFulfillmentConfig?: { [key: string]: string; };
+    /**
      * Plugins to deploy
      * @type {Array<string>}
      * @memberof PluginsConfig
      */
-    enabledPlugins?: Array<string> | null;
+    enabledPlugins: Array<string> | null;
     /**
      * LVMS deployment configuration
      * @type {LVMSConfig}
@@ -66,6 +92,126 @@ export interface PluginsConfig {
      */
     odfDefaults?: ODFConfig;
     /**
+     * Path to AAP license manifest.zip on the landing zone
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacAapLicenseFile?: string;
+    /**
+     * Use external PostgreSQL instead of built-in
+     * @type {boolean}
+     * @memberof PluginsConfig
+     */
+    osacBYODatabase?: boolean;
+    /**
+     * Namespace where BareMetalHost CRs are created for Metal3 power management
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmBmhNamespace?: string;
+    /**
+     * PEM-encoded CA certificate for verifying BCM server cert (optional)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmCaCert?: string;
+    /**
+     * PEM-encoded client certificate for BCM mTLS authentication
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmCert?: string;
+    /**
+     * Enable BCM inventory backend for bare metal fulfillment
+     * @type {boolean}
+     * @memberof PluginsConfig
+     */
+    osacBcmEnabled?: boolean;
+    /**
+     * Host class identifier for BCM inventory (default: bcm)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmHostClass?: string;
+    /**
+     * Skip TLS verification of BCM server certificate (test environments only)
+     * @type {boolean}
+     * @memberof PluginsConfig
+     */
+    osacBcmInsecureSkipVerify?: boolean;
+    /**
+     * PEM-encoded client private key for BCM mTLS authentication
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmKey?: string;
+    /**
+     * BCM head node API endpoint (e.g. https://bcm-head:8081)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacBcmUrl?: string;
+    /**
+     * PostgreSQL connection URL when using BYO database
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacDatabaseUrl?: string;
+    /**
+     * Fully-qualified Ansible role name of the DNS driver
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacDnsClass?: PluginsConfigOsacDnsClassEnum;
+    /**
+     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacDnsZone?: string;
+    /**
+     * Enable Metal3 inventory backend for bare metal fulfillment
+     * @type {boolean}
+     * @memberof PluginsConfig
+     */
+    osacMetal3Enabled?: boolean;
+    /**
+     * OSAC deployment profile
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    osacProfile?: PluginsConfigOsacProfileEnum;
+    /**
+     * List of enabled service profiles: vmaas, caas, bmaas
+     * @type {Array<string>}
+     * @memberof PluginsConfig
+     */
+    osacProfilesList?: Array<string> | null;
+    /**
+     * PVC size for Keycloak PostgreSQL
+     * @type {string}
+     * @memberof PluginsConfig
+     */
+    rhbkDbSize?: string;
+    /**
+     * Deploy PostgreSQL alongside Keycloak
+     * @type {boolean}
+     * @memberof PluginsConfig
+     */
+    rhbkDeployDatabase?: boolean;
+    /**
+     * Number of Keycloak replicas
+     * @type {number}
+     * @memberof PluginsConfig
+     */
+    rhbkInstances?: number;
+    /**
+     * Trust-manager CA issuer configuration
+     * @type {TrustManagerConfig}
+     * @memberof PluginsConfig
+     */
+    trustManagerDefaults?: TrustManagerConfig;
+    /**
      * VAST CSI deployment defaults
      * @type {VASTConfig}
      * @memberof PluginsConfig
@@ -73,10 +219,32 @@ export interface PluginsConfig {
     vastDefaults?: VASTConfig;
 }
 
+
+/**
+ * @export
+ */
+export const PluginsConfigOsacDnsClassEnum = {
+    DnsRoute53Dns: 'dns.route53.dns'
+} as const;
+export type PluginsConfigOsacDnsClassEnum = typeof PluginsConfigOsacDnsClassEnum[keyof typeof PluginsConfigOsacDnsClassEnum];
+
+/**
+ * @export
+ */
+export const PluginsConfigOsacProfileEnum = {
+    Development: 'development',
+    Caas: 'caas',
+    Vmaas: 'vmaas',
+    Bmaas: 'bmaas'
+} as const;
+export type PluginsConfigOsacProfileEnum = typeof PluginsConfigOsacProfileEnum[keyof typeof PluginsConfigOsacProfileEnum];
+
+
 /**
  * Check if a given object implements the PluginsConfig interface.
  */
 export function instanceOfPluginsConfig(value: object): value is PluginsConfig {
+    if (!('enabledPlugins' in value) || value['enabledPlugins'] === undefined) return false;
     return true;
 }
 
@@ -91,9 +259,31 @@ export function PluginsConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         '$schema': json['$schema'] == null ? undefined : json['$schema'],
-        'enabledPlugins': json['enabled_plugins'] == null ? undefined : json['enabled_plugins'],
+        'aapDefaults': json['aapDefaults'] == null ? undefined : AAPConfigFromJSON(json['aapDefaults']),
+        'clusterFulfillmentConfig': json['clusterFulfillmentConfig'] == null ? undefined : json['clusterFulfillmentConfig'],
+        'enabledPlugins': json['enabled_plugins'] == null ? null : json['enabled_plugins'],
         'lvmsDefaults': json['lvmsDefaults'] == null ? undefined : LVMSConfigFromJSON(json['lvmsDefaults']),
         'odfDefaults': json['odfDefaults'] == null ? undefined : ODFConfigFromJSON(json['odfDefaults']),
+        'osacAapLicenseFile': json['osacAapLicenseFile'] == null ? undefined : json['osacAapLicenseFile'],
+        'osacBYODatabase': json['osacBYODatabase'] == null ? undefined : json['osacBYODatabase'],
+        'osacBcmBmhNamespace': json['osacBcmBmhNamespace'] == null ? undefined : json['osacBcmBmhNamespace'],
+        'osacBcmCaCert': json['osacBcmCaCert'] == null ? undefined : json['osacBcmCaCert'],
+        'osacBcmCert': json['osacBcmCert'] == null ? undefined : json['osacBcmCert'],
+        'osacBcmEnabled': json['osacBcmEnabled'] == null ? undefined : json['osacBcmEnabled'],
+        'osacBcmHostClass': json['osacBcmHostClass'] == null ? undefined : json['osacBcmHostClass'],
+        'osacBcmInsecureSkipVerify': json['osacBcmInsecureSkipVerify'] == null ? undefined : json['osacBcmInsecureSkipVerify'],
+        'osacBcmKey': json['osacBcmKey'] == null ? undefined : json['osacBcmKey'],
+        'osacBcmUrl': json['osacBcmUrl'] == null ? undefined : json['osacBcmUrl'],
+        'osacDatabaseUrl': json['osacDatabaseUrl'] == null ? undefined : json['osacDatabaseUrl'],
+        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
+        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
+        'osacMetal3Enabled': json['osacMetal3Enabled'] == null ? undefined : json['osacMetal3Enabled'],
+        'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
+        'osacProfilesList': json['osacProfilesList'] == null ? undefined : json['osacProfilesList'],
+        'rhbkDbSize': json['rhbk_db_size'] == null ? undefined : json['rhbk_db_size'],
+        'rhbkDeployDatabase': json['rhbk_deploy_database'] == null ? undefined : json['rhbk_deploy_database'],
+        'rhbkInstances': json['rhbk_instances'] == null ? undefined : json['rhbk_instances'],
+        'trustManagerDefaults': json['trustManagerDefaults'] == null ? undefined : TrustManagerConfigFromJSON(json['trustManagerDefaults']),
         'vastDefaults': json['vastDefaults'] == null ? undefined : VASTConfigFromJSON(json['vastDefaults']),
     };
 }
@@ -109,9 +299,31 @@ export function PluginsConfigToJSONTyped(value?: Omit<PluginsConfig, '$schema'> 
 
     return {
         
+        'aapDefaults': AAPConfigToJSON(value['aapDefaults']),
+        'clusterFulfillmentConfig': value['clusterFulfillmentConfig'],
         'enabled_plugins': value['enabledPlugins'],
         'lvmsDefaults': LVMSConfigToJSON(value['lvmsDefaults']),
         'odfDefaults': ODFConfigToJSON(value['odfDefaults']),
+        'osacAapLicenseFile': value['osacAapLicenseFile'],
+        'osacBYODatabase': value['osacBYODatabase'],
+        'osacBcmBmhNamespace': value['osacBcmBmhNamespace'],
+        'osacBcmCaCert': value['osacBcmCaCert'],
+        'osacBcmCert': value['osacBcmCert'],
+        'osacBcmEnabled': value['osacBcmEnabled'],
+        'osacBcmHostClass': value['osacBcmHostClass'],
+        'osacBcmInsecureSkipVerify': value['osacBcmInsecureSkipVerify'],
+        'osacBcmKey': value['osacBcmKey'],
+        'osacBcmUrl': value['osacBcmUrl'],
+        'osacDatabaseUrl': value['osacDatabaseUrl'],
+        'osacDnsClass': value['osacDnsClass'],
+        'osacDnsZone': value['osacDnsZone'],
+        'osacMetal3Enabled': value['osacMetal3Enabled'],
+        'osacProfile': value['osacProfile'],
+        'osacProfilesList': value['osacProfilesList'],
+        'rhbk_db_size': value['rhbkDbSize'],
+        'rhbk_deploy_database': value['rhbkDeployDatabase'],
+        'rhbk_instances': value['rhbkInstances'],
+        'trustManagerDefaults': TrustManagerConfigToJSON(value['trustManagerDefaults']),
         'vastDefaults': VASTConfigToJSON(value['vastDefaults']),
     };
 }

@@ -7,9 +7,31 @@
 Name | Type
 ------------ | -------------
 `$schema` | string
+`aapDefaults` | [AAPConfig](AAPConfig.md)
+`clusterFulfillmentConfig` | { [key: string]: string; }
 `enabledPlugins` | Array&lt;string&gt;
 `lvmsDefaults` | [LVMSConfig](LVMSConfig.md)
 `odfDefaults` | [ODFConfig](ODFConfig.md)
+`osacAapLicenseFile` | string
+`osacBYODatabase` | boolean
+`osacBcmBmhNamespace` | string
+`osacBcmCaCert` | string
+`osacBcmCert` | string
+`osacBcmEnabled` | boolean
+`osacBcmHostClass` | string
+`osacBcmInsecureSkipVerify` | boolean
+`osacBcmKey` | string
+`osacBcmUrl` | string
+`osacDatabaseUrl` | string
+`osacDnsClass` | string
+`osacDnsZone` | string
+`osacMetal3Enabled` | boolean
+`osacProfile` | string
+`osacProfilesList` | Array&lt;string&gt;
+`rhbkDbSize` | string
+`rhbkDeployDatabase` | boolean
+`rhbkInstances` | number
+`trustManagerDefaults` | [TrustManagerConfig](TrustManagerConfig.md)
 `vastDefaults` | [VASTConfig](VASTConfig.md)
 
 ## Example
@@ -20,9 +42,31 @@ import type { PluginsConfig } from '@enclave-wizard-ui/api-client'
 // TODO: Update the object below with actual values
 const example = {
   "$schema": null,
+  "aapDefaults": null,
+  "clusterFulfillmentConfig": null,
   "enabledPlugins": null,
   "lvmsDefaults": null,
   "odfDefaults": null,
+  "osacAapLicenseFile": null,
+  "osacBYODatabase": null,
+  "osacBcmBmhNamespace": null,
+  "osacBcmCaCert": null,
+  "osacBcmCert": null,
+  "osacBcmEnabled": null,
+  "osacBcmHostClass": null,
+  "osacBcmInsecureSkipVerify": null,
+  "osacBcmKey": null,
+  "osacBcmUrl": null,
+  "osacDatabaseUrl": null,
+  "osacDnsClass": null,
+  "osacDnsZone": null,
+  "osacMetal3Enabled": null,
+  "osacProfile": null,
+  "osacProfilesList": null,
+  "rhbkDbSize": null,
+  "rhbkDeployDatabase": null,
+  "rhbkInstances": null,
+  "trustManagerDefaults": null,
   "vastDefaults": null,
 } satisfies PluginsConfig
 

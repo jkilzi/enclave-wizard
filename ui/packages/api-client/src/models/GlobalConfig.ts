@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime.js';
+import type { AAPConfig } from './AAPConfig.js';
+import {
+    AAPConfigFromJSON,
+    AAPConfigFromJSONTyped,
+    AAPConfigToJSON,
+    AAPConfigToJSONTyped,
+} from './AAPConfig.js';
 import type { LVMSStorageConfig } from './LVMSStorageConfig.js';
 import {
     LVMSStorageConfigFromJSON,
@@ -55,6 +62,13 @@ import {
     VASTVipPoolToJSON,
     VASTVipPoolToJSONTyped,
 } from './VASTVipPool.js';
+import type { TrustManagerConfig } from './TrustManagerConfig.js';
+import {
+    TrustManagerConfigFromJSON,
+    TrustManagerConfigFromJSONTyped,
+    TrustManagerConfigToJSON,
+    TrustManagerConfigToJSONTyped,
+} from './TrustManagerConfig.js';
 
 /**
  * 
@@ -62,6 +76,12 @@ import {
  * @interface GlobalConfig
  */
 export interface GlobalConfig {
+    /**
+     * AAP deployment configuration
+     * @type {AAPConfig}
+     * @memberof GlobalConfig
+     */
+    aapDefaults?: AAPConfig;
     /**
      * Control plane nodes (exactly 3)
      * @type {Array<HostEntry>}
@@ -80,6 +100,12 @@ export interface GlobalConfig {
      * @memberof GlobalConfig
      */
     baseDomain: string;
+    /**
+     * Cluster fulfillment configuration (passed through to osac-installer Helm values)
+     * @type {{ [key: string]: string; }}
+     * @memberof GlobalConfig
+     */
+    clusterFulfillmentConfig?: { [key: string]: string; };
     /**
      * OpenShift cluster name
      * @type {string}
@@ -111,11 +137,11 @@ export interface GlobalConfig {
      */
     defaultPrefix: number;
     /**
-     * Air-gapped deployment mode (default: true)
+     * Air-gapped deployment mode
      * @type {boolean}
      * @memberof GlobalConfig
      */
-    disconnected?: boolean;
+    disconnected: boolean | null;
     /**
      * Enable TPM v2 disk encryption
      * @type {boolean}
@@ -127,61 +153,7 @@ export interface GlobalConfig {
      * @type {Array<string>}
      * @memberof GlobalConfig
      */
-    enabledPlugins?: Array<string> | null;
-    /**
-     * OSAC deployment profile
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacProfile?: string;
-    /**
-     * Path to AAP license manifest.zip on the landing zone
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacAapLicenseFile?: string;
-    /**
-     * Use external PostgreSQL instead of built-in
-     * @type {boolean}
-     * @memberof GlobalConfig
-     */
-    osacBYODatabase?: boolean;
-    /**
-     * PostgreSQL connection URL when using BYO database
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDatabaseUrl?: string;
-    /**
-     * Fully-qualified Ansible role name of the DNS driver
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDnsClass?: string;
-    /**
-     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    osacDnsZone?: string;
-    /**
-     * Number of Keycloak replicas
-     * @type {number}
-     * @memberof GlobalConfig
-     */
-    rhbkInstances?: number;
-    /**
-     * Deploy PostgreSQL alongside Keycloak
-     * @type {boolean}
-     * @memberof GlobalConfig
-     */
-    rhbkDeployDatabase?: boolean;
-    /**
-     * PVC size for Keycloak PostgreSQL
-     * @type {string}
-     * @memberof GlobalConfig
-     */
-    rhbkDbSize?: string;
+    enabledPlugins: Array<string> | null;
     /**
      * Virtual IP for ingress wildcard
      * @type {string}
@@ -237,6 +209,102 @@ export interface GlobalConfig {
      */
     odfExternalConfig?: string;
     /**
+     * Path to AAP license manifest.zip on the landing zone
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacAapLicenseFile?: string;
+    /**
+     * Use external PostgreSQL instead of built-in
+     * @type {boolean}
+     * @memberof GlobalConfig
+     */
+    osacBYODatabase?: boolean;
+    /**
+     * Namespace where BareMetalHost CRs are created for Metal3 power management
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmBmhNamespace?: string;
+    /**
+     * PEM-encoded CA certificate for verifying BCM server cert (optional)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmCaCert?: string;
+    /**
+     * PEM-encoded client certificate for BCM mTLS authentication
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmCert?: string;
+    /**
+     * Enable BCM inventory backend for bare metal fulfillment
+     * @type {boolean}
+     * @memberof GlobalConfig
+     */
+    osacBcmEnabled?: boolean;
+    /**
+     * Host class identifier for BCM inventory (default: bcm)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmHostClass?: string;
+    /**
+     * Skip TLS verification of BCM server certificate (test environments only)
+     * @type {boolean}
+     * @memberof GlobalConfig
+     */
+    osacBcmInsecureSkipVerify?: boolean;
+    /**
+     * PEM-encoded client private key for BCM mTLS authentication
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmKey?: string;
+    /**
+     * BCM head node API endpoint (e.g. https://bcm-head:8081)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacBcmUrl?: string;
+    /**
+     * PostgreSQL connection URL when using BYO database
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacDatabaseUrl?: string;
+    /**
+     * Fully-qualified Ansible role name of the DNS driver
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacDnsClass?: GlobalConfigOsacDnsClassEnum;
+    /**
+     * DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacDnsZone?: string;
+    /**
+     * Enable Metal3 inventory backend for bare metal fulfillment
+     * @type {boolean}
+     * @memberof GlobalConfig
+     */
+    osacMetal3Enabled?: boolean;
+    /**
+     * OSAC deployment profile
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    osacProfile?: GlobalConfigOsacProfileEnum;
+    /**
+     * List of enabled service profiles: vmaas, caas, bmaas
+     * @type {Array<string>}
+     * @memberof GlobalConfig
+     */
+    osacProfilesList?: Array<string> | null;
+    /**
      * 
      * @type {any}
      * @memberof GlobalConfig
@@ -273,17 +341,41 @@ export interface GlobalConfig {
      */
     rendezvousIP: string;
     /**
-     * Path to SSH public key file
+     * PVC size for Keycloak PostgreSQL
      * @type {string}
      * @memberof GlobalConfig
      */
-    sshPubKey: string;
+    rhbkDbSize?: string;
+    /**
+     * Deploy PostgreSQL alongside Keycloak
+     * @type {boolean}
+     * @memberof GlobalConfig
+     */
+    rhbkDeployDatabase?: boolean;
+    /**
+     * Number of Keycloak replicas
+     * @type {number}
+     * @memberof GlobalConfig
+     */
+    rhbkInstances?: number;
+    /**
+     * SSH public key content (e.g. ssh-rsa AAAA...)
+     * @type {string}
+     * @memberof GlobalConfig
+     */
+    sshPubKey?: string;
     /**
      * Storage plugin
      * @type {string}
      * @memberof GlobalConfig
      */
     storagePlugin: GlobalConfigStoragePluginEnum;
+    /**
+     * Trust-manager CA issuer configuration
+     * @type {TrustManagerConfig}
+     * @memberof GlobalConfig
+     */
+    trustManagerDefaults?: TrustManagerConfig;
     /**
      * VAST management API password
      * @type {string}
@@ -337,6 +429,25 @@ export type GlobalConfigOcMirrorLogLevelEnum = typeof GlobalConfigOcMirrorLogLev
 /**
  * @export
  */
+export const GlobalConfigOsacDnsClassEnum = {
+    DnsRoute53Dns: 'dns.route53.dns'
+} as const;
+export type GlobalConfigOsacDnsClassEnum = typeof GlobalConfigOsacDnsClassEnum[keyof typeof GlobalConfigOsacDnsClassEnum];
+
+/**
+ * @export
+ */
+export const GlobalConfigOsacProfileEnum = {
+    Development: 'development',
+    Caas: 'caas',
+    Vmaas: 'vmaas',
+    Bmaas: 'bmaas'
+} as const;
+export type GlobalConfigOsacProfileEnum = typeof GlobalConfigOsacProfileEnum[keyof typeof GlobalConfigOsacProfileEnum];
+
+/**
+ * @export
+ */
 export const GlobalConfigQuayBackendEnum = {
     RadosGwStorage: 'RadosGWStorage',
     LocalStorage: 'LocalStorage'
@@ -365,6 +476,8 @@ export function instanceOfGlobalConfig(value: object): value is GlobalConfig {
     if (!('defaultDNS' in value) || value['defaultDNS'] === undefined) return false;
     if (!('defaultGateway' in value) || value['defaultGateway'] === undefined) return false;
     if (!('defaultPrefix' in value) || value['defaultPrefix'] === undefined) return false;
+    if (!('disconnected' in value) || value['disconnected'] === undefined) return false;
+    if (!('enabledPlugins' in value) || value['enabledPlugins'] === undefined) return false;
     if (!('ingressVIP' in value) || value['ingressVIP'] === undefined) return false;
     if (!('lzBmcIP' in value) || value['lzBmcIP'] === undefined) return false;
     if (!('machineNetwork' in value) || value['machineNetwork'] === undefined) return false;
@@ -373,7 +486,7 @@ export function instanceOfGlobalConfig(value: object): value is GlobalConfig {
     if (!('quayPassword' in value) || value['quayPassword'] === undefined) return false;
     if (!('quayUser' in value) || value['quayUser'] === undefined) return false;
     if (!('rendezvousIP' in value) || value['rendezvousIP'] === undefined) return false;
-    if (!('sshPubKey' in value) || value['sshPubKey'] === undefined) return false;
+    if (!('storagePlugin' in value) || value['storagePlugin'] === undefined) return false;
     if (!('workingDir' in value) || value['workingDir'] === undefined) return false;
     return true;
 }
@@ -388,26 +501,19 @@ export function GlobalConfigFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
+        'aapDefaults': json['aapDefaults'] == null ? undefined : AAPConfigFromJSON(json['aapDefaults']),
         'agentHosts': (json['agent_hosts'] == null ? null : (json['agent_hosts'] as Array<any>).map(HostEntryFromJSON)),
         'apiVIP': json['apiVIP'],
         'baseDomain': json['baseDomain'],
+        'clusterFulfillmentConfig': json['clusterFulfillmentConfig'] == null ? undefined : json['clusterFulfillmentConfig'],
         'clusterName': json['clusterName'],
         'defaultDNS': json['defaultDNS'],
         'defaultGateway': json['defaultGateway'],
         'defaultNtpServers': json['defaultNtpServers'] == null ? undefined : json['defaultNtpServers'],
         'defaultPrefix': json['defaultPrefix'],
-        'disconnected': json['disconnected'] == null ? undefined : json['disconnected'],
+        'disconnected': json['disconnected'],
         'diskEncryption': json['diskEncryption'] == null ? undefined : json['diskEncryption'],
-        'enabledPlugins': json['enabled_plugins'] == null ? undefined : json['enabled_plugins'],
-        'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
-        'osacAapLicenseFile': json['osacAapLicenseFile'] == null ? undefined : json['osacAapLicenseFile'],
-        'osacBYODatabase': json['osacBYODatabase'] == null ? undefined : json['osacBYODatabase'],
-        'osacDatabaseUrl': json['osacDatabaseUrl'] == null ? undefined : json['osacDatabaseUrl'],
-        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
-        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
-        'rhbkInstances': json['rhbk_instances'] == null ? undefined : json['rhbk_instances'],
-        'rhbkDeployDatabase': json['rhbk_deploy_database'] == null ? undefined : json['rhbk_deploy_database'],
-        'rhbkDbSize': json['rhbk_db_size'] == null ? undefined : json['rhbk_db_size'],
+        'enabledPlugins': json['enabled_plugins'] == null ? null : json['enabled_plugins'],
         'ingressVIP': json['ingressVIP'],
         'lvmsConfig': json['lvmsConfig'] == null ? undefined : LVMSStorageConfigFromJSON(json['lvmsConfig']),
         'lzBmcHostname': json['lzBmcHostname'] == null ? undefined : json['lzBmcHostname'],
@@ -417,14 +523,34 @@ export function GlobalConfigFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'ocMirrorLogLevel': json['ocMirrorLogLevel'] == null ? undefined : json['ocMirrorLogLevel'],
         'odfDefaults': json['odfDefaults'] == null ? undefined : ODFConfigFromJSON(json['odfDefaults']),
         'odfExternalConfig': json['odfExternalConfig'] == null ? undefined : json['odfExternalConfig'],
+        'osacAapLicenseFile': json['osacAapLicenseFile'] == null ? undefined : json['osacAapLicenseFile'],
+        'osacBYODatabase': json['osacBYODatabase'] == null ? undefined : json['osacBYODatabase'],
+        'osacBcmBmhNamespace': json['osacBcmBmhNamespace'] == null ? undefined : json['osacBcmBmhNamespace'],
+        'osacBcmCaCert': json['osacBcmCaCert'] == null ? undefined : json['osacBcmCaCert'],
+        'osacBcmCert': json['osacBcmCert'] == null ? undefined : json['osacBcmCert'],
+        'osacBcmEnabled': json['osacBcmEnabled'] == null ? undefined : json['osacBcmEnabled'],
+        'osacBcmHostClass': json['osacBcmHostClass'] == null ? undefined : json['osacBcmHostClass'],
+        'osacBcmInsecureSkipVerify': json['osacBcmInsecureSkipVerify'] == null ? undefined : json['osacBcmInsecureSkipVerify'],
+        'osacBcmKey': json['osacBcmKey'] == null ? undefined : json['osacBcmKey'],
+        'osacBcmUrl': json['osacBcmUrl'] == null ? undefined : json['osacBcmUrl'],
+        'osacDatabaseUrl': json['osacDatabaseUrl'] == null ? undefined : json['osacDatabaseUrl'],
+        'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
+        'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
+        'osacMetal3Enabled': json['osacMetal3Enabled'] == null ? undefined : json['osacMetal3Enabled'],
+        'osacProfile': json['osacProfile'] == null ? undefined : json['osacProfile'],
+        'osacProfilesList': json['osacProfilesList'] == null ? undefined : json['osacProfilesList'],
         'pullSecret': json['pullSecret'],
         'quayBackend': json['quayBackend'],
         'quayBackendRGWConfiguration': json['quayBackendRGWConfiguration'] == null ? undefined : QuayBackendRGWConfigurationFromJSON(json['quayBackendRGWConfiguration']),
         'quayPassword': json['quayPassword'],
         'quayUser': json['quayUser'],
         'rendezvousIP': json['rendezvousIP'],
-        'sshPubKey': json['sshPubKey'],
+        'rhbkDbSize': json['rhbk_db_size'] == null ? undefined : json['rhbk_db_size'],
+        'rhbkDeployDatabase': json['rhbk_deploy_database'] == null ? undefined : json['rhbk_deploy_database'],
+        'rhbkInstances': json['rhbk_instances'] == null ? undefined : json['rhbk_instances'],
+        'sshPubKey': json['sshPubKey'] == null ? undefined : json['sshPubKey'],
         'storagePlugin': json['storage_plugin'],
+        'trustManagerDefaults': json['trustManagerDefaults'] == null ? undefined : TrustManagerConfigFromJSON(json['trustManagerDefaults']),
         'vastAdminPassword': json['vastAdminPassword'] == null ? undefined : json['vastAdminPassword'],
         'vastAdminUsername': json['vastAdminUsername'] == null ? undefined : json['vastAdminUsername'],
         'vastDefaults': json['vastDefaults'] == null ? undefined : VASTConfigFromJSON(json['vastDefaults']),
@@ -445,9 +571,11 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
 
     return {
         
+        'aapDefaults': AAPConfigToJSON(value['aapDefaults']),
         'agent_hosts': (value['agentHosts'] == null ? null : (value['agentHosts'] as Array<any>).map(HostEntryToJSON)),
         'apiVIP': value['apiVIP'],
         'baseDomain': value['baseDomain'],
+        'clusterFulfillmentConfig': value['clusterFulfillmentConfig'],
         'clusterName': value['clusterName'],
         'defaultDNS': value['defaultDNS'],
         'defaultGateway': value['defaultGateway'],
@@ -455,16 +583,7 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
         'defaultPrefix': value['defaultPrefix'],
         'disconnected': value['disconnected'],
         'diskEncryption': value['diskEncryption'],
-        'enabled_plugins': value['enabledPlugins'] ?? [],
-        'osacProfile': value['osacProfile'],
-        'osacAapLicenseFile': value['osacAapLicenseFile'],
-        'osacBYODatabase': value['osacBYODatabase'],
-        'osacDatabaseUrl': value['osacDatabaseUrl'],
-        'osacDnsClass': value['osacDnsClass'],
-        'osacDnsZone': value['osacDnsZone'],
-        'rhbk_instances': value['rhbkInstances'],
-        'rhbk_deploy_database': value['rhbkDeployDatabase'],
-        'rhbk_db_size': value['rhbkDbSize'],
+        'enabled_plugins': value['enabledPlugins'],
         'ingressVIP': value['ingressVIP'],
         'lvmsConfig': LVMSStorageConfigToJSON(value['lvmsConfig']),
         'lzBmcHostname': value['lzBmcHostname'],
@@ -474,14 +593,34 @@ export function GlobalConfigToJSONTyped(value?: GlobalConfig | null, ignoreDiscr
         'ocMirrorLogLevel': value['ocMirrorLogLevel'],
         'odfDefaults': ODFConfigToJSON(value['odfDefaults']),
         'odfExternalConfig': value['odfExternalConfig'],
+        'osacAapLicenseFile': value['osacAapLicenseFile'],
+        'osacBYODatabase': value['osacBYODatabase'],
+        'osacBcmBmhNamespace': value['osacBcmBmhNamespace'],
+        'osacBcmCaCert': value['osacBcmCaCert'],
+        'osacBcmCert': value['osacBcmCert'],
+        'osacBcmEnabled': value['osacBcmEnabled'],
+        'osacBcmHostClass': value['osacBcmHostClass'],
+        'osacBcmInsecureSkipVerify': value['osacBcmInsecureSkipVerify'],
+        'osacBcmKey': value['osacBcmKey'],
+        'osacBcmUrl': value['osacBcmUrl'],
+        'osacDatabaseUrl': value['osacDatabaseUrl'],
+        'osacDnsClass': value['osacDnsClass'],
+        'osacDnsZone': value['osacDnsZone'],
+        'osacMetal3Enabled': value['osacMetal3Enabled'],
+        'osacProfile': value['osacProfile'],
+        'osacProfilesList': value['osacProfilesList'],
         'pullSecret': value['pullSecret'],
         'quayBackend': value['quayBackend'],
         'quayBackendRGWConfiguration': QuayBackendRGWConfigurationToJSON(value['quayBackendRGWConfiguration']),
         'quayPassword': value['quayPassword'],
         'quayUser': value['quayUser'],
         'rendezvousIP': value['rendezvousIP'],
+        'rhbk_db_size': value['rhbkDbSize'],
+        'rhbk_deploy_database': value['rhbkDeployDatabase'],
+        'rhbk_instances': value['rhbkInstances'],
         'sshPubKey': value['sshPubKey'],
         'storage_plugin': value['storagePlugin'],
+        'trustManagerDefaults': TrustManagerConfigToJSON(value['trustManagerDefaults']),
         'vastAdminPassword': value['vastAdminPassword'],
         'vastAdminUsername': value['vastAdminUsername'],
         'vastDefaults': VASTConfigToJSON(value['vastDefaults']),

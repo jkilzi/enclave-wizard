@@ -113,6 +113,14 @@ export function wizardReducer(
       if (osacProfile) {
         updated = setNestedField(updated, ["global", "osacProfile"], osacProfile);
       }
+      const profilesList = selected.map((f) => f.id);
+      if (profilesList.length > 0) {
+        updated = setNestedField(
+          updated,
+          ["global", "osacProfilesList"],
+          profilesList,
+        );
+      }
       return { ...state, selectedFlavors: nextFlavors, configData: updated as ConfigData };
     }
     case "SET_FIELD": {
