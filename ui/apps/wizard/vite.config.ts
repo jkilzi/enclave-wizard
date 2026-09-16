@@ -5,9 +5,11 @@ export default defineConfig((_env) => {
   return {
     plugins: [react()],
     server: {
-      host: "0.0.0.0",
-      port: 3001,
+      port: Number(process.env.VITE_PORT || 3001),
       strictPort: true,
+      hmr: {
+        clientPort: Number(process.env.VITE_PORT || 3001),
+      },
       proxy: {
         "/api/v1": {
           target: process.env.API_PROXY_TARGET || "https://127.0.0.1:3443",

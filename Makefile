@@ -165,7 +165,7 @@ WIZARD_DEV_FLAGS := --no-auth --enclave-dir enclave-mock \
 	--tls-cert hack/tls/server.crt --tls-key hack/tls/server.key \
 	--http-port $(WIZARD_HTTP_PORT)
 
-dev-hmr: ## Run API + Vite (HMR). On macOS use http://localhost:3001 after port forward.
+dev-hmr: ## Run API + Vite Dev-server (with HMR).
 	cd ui && yarn install
 	cd ui && API_PROXY_TARGET=$(API_PROXY_TARGET) yarn run dev:stack
 
