@@ -28,6 +28,7 @@ import {
 } from "../schema/schemaUtils.ts";
 import { useOpenApiSchema } from "../schema/useOpenApiSchema.ts";
 import { isValidDnsZone } from "./dnsZone.ts";
+import { validateOsacBcmFields } from "./osacBcmValidation.ts";
 import { STEP_REQUIRED_FIELDS } from "./stepFields.ts";
 import { AAPStep } from "./steps/AAPStep.tsx";
 import { CaasStep } from "./steps/CaasStep.tsx";
@@ -415,6 +416,7 @@ function WizardContent(): React.ReactElement {
       if (!((globalData.osacAapLicenseFile as string) ?? "").trim()) {
         errors.push({ path: "global.osacAapLicenseFile", label: "AAP subscription manifest", message: "AAP subscription manifest is required for OSAC" });
       }
+      errors.push(...validateOsacBcmFields(globalData, state.showValidation));
     }
 
     if (currentSubStepId === "caas") {

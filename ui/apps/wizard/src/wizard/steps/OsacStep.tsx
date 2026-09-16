@@ -1,4 +1,5 @@
 import {
+  Button,
   Content,
   ExpandableSection,
   FileUpload,
@@ -18,13 +19,18 @@ import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import type React from "react";
 import { useCallback, useState } from "react";
 import { useFileUpload } from "../../api/useFileUpload.ts";
+import { CertificateField } from "../components/CertificateField.tsx";
 import { useWizard } from "../WizardContext.tsx";
 import { stepStyles } from "./stepStyles.ts";
+
+const BCM_PRODUCT_DOC =
+  "https://docs.nvidia.com/base-command-manager/base-command-manager-user-guide/latest/overview.html";
 
 export const OsacStep: React.FC = () => {
   const { state, dispatch } = useWizard();
   const globalData = ((state.configData as Record<string, unknown>).global ??
     {}) as Record<string, unknown>;
+  const showBcm = state.selectedFlavors.has("bmaas");
 
   const aapLicenseFile = (globalData.osacAapLicenseFile as string) ?? "";
   const byoDatabase = (globalData.osacBYODatabase as boolean) ?? false;
@@ -35,6 +41,16 @@ export const OsacStep: React.FC = () => {
   const rhbkDeployDatabase =
     (globalData.rhbk_deploy_database as boolean) ?? true;
   const rhbkDbSize = (globalData.rhbk_db_size as string) ?? "5Gi";
+
+  const bcmEnabled = (globalData.osacBcmEnabled as boolean) ?? false;
+  const bcmUrl = (globalData.osacBcmUrl as string) ?? "";
+  const bcmCert = (globalData.osacBcmCert as string) ?? "";
+  const bcmKey = (globalData.osacBcmKey as string) ?? "";
+  const bcmCaCert = (globalData.osacBcmCaCert as string) ?? "";
+  const bcmInsecure =
+    (globalData.osacBcmInsecureSkipVerify as boolean) ?? false;
+  const bcmHostClass = (globalData.osacBcmHostClass as string) ?? "";
+  const bcmBmhNamespace = (globalData.osacBcmBmhNamespace as string) ?? "";
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [uploadFilename, setUploadFilename] = useState("");
@@ -63,6 +79,26 @@ export const OsacStep: React.FC = () => {
     setUploadFilename("");
     setField("osacAapLicenseFile", "");
   }, [setField]);
+
+  const setBcmEnabled = useCallback(
+    (_e: unknown, checked: boolean) => {
+      setField("osacBcmEnabled", checked);
+      if (checked) {
+        setField("osacMetal3Enabled", false);
+      }
+    },
+    [setField],
+  );
+
+  const bcmUrlError =
+    state.showValidation &&
+    bcmEnabled &&
+    (!bcmUrl.trim() || !bcmUrl.startsWith("https://"));
+  const bcmCertError =
+    state.showValidation && bcmEnabled && !bcmCert.trim();
+  const bcmKeyError = state.showValidation && bcmEnabled && !bcmKey.trim();
+  const bcmNsError =
+    state.showValidation && bcmEnabled && !bcmBmhNamespace.trim();
 
   return (
     <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
@@ -133,6 +169,169 @@ export const OsacStep: React.FC = () => {
           )}
         </FormGroup>
       </FlexItem>
+
+      {showBcm && (
+        <FlexItem>
+          <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
+            <FlexItem>
+              <Title headingLevel="h4" size="md">
+                Bare-metal provisioning
+              </Title>
+              <Content component="p" className={stepStyles.subtitle}>
+                Choose which system holds your physical server inventory.{" "}
+                <Popover
+                  headerContent="Bare metal inventory"
+                  bodyContent={
+                    <>
+                      <Content component="p">
+                        Connect an external inventory source so bare metal as a
+                        service can discover servers and provision them. Only one
+                        source can be enabled at a time.
+                      </Content>
+                      <Button
+                        variant="link"
+                        isInline
+                        component="a"
+                        href={BCM_PRODUCT_DOC}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        NVIDIA Base Command Manager documentation
+                      </Button>
+                    </>
+                  }
+                >
+                  <Button variant="link" isInline component="span">
+                    Learn more
+                  </Button>
+                </Popover>
+              </Content>
+            </FlexItem>
+            <FlexItem>
+              <FormGroup
+                label="Inventory backend"
+                fieldId="osac-inventory-sources"
+              >
+                <Switch
+                  id="osac-bcm-enabled"
+                  label="NVIDIA Base Command Manager (BCM)"
+                  isChecked={bcmEnabled}
+                  onChange={setBcmEnabled}
+                />
+              </FormGroup>
+            </FlexItem>
+
+            {bcmEnabled && (
+              <>
+                <FlexItem>
+                  <FormGroup
+                    label="BCM API URL"
+                    isRequired
+                    fieldId="osac-bcm-url"
+                  >
+                    <TextInput
+                      id="osac-bcm-url"
+                      value={bcmUrl}
+                      onChange={(_e, val) => setField("osacBcmUrl", val)}
+                      placeholder="https://bcm-head:8081"
+                      validated={bcmUrlError ? "error" : "default"}
+                    />
+                    <HelperText>
+                      <HelperTextItem>
+                        Head node JSON API endpoint (HTTPS, mTLS)
+                      </HelperTextItem>
+                    </HelperText>
+                  </FormGroup>
+                </FlexItem>
+
+                <FlexItem>
+                  <CertificateField
+                    label="BCM client certificate"
+                    description="PEM client certificate for mTLS"
+                    value={bcmCert}
+                    onChange={(v) => setField("osacBcmCert", v)}
+                  />
+                  {bcmCertError && (
+                    <HelperText>
+                      <HelperTextItem variant="error">
+                        Client certificate is required
+                      </HelperTextItem>
+                    </HelperText>
+                  )}
+                </FlexItem>
+
+                <FlexItem>
+                  <CertificateField
+                    label="BCM client private key"
+                    value={bcmKey}
+                    onChange={(v) => setField("osacBcmKey", v)}
+                  />
+                  {bcmKeyError && (
+                    <HelperText>
+                      <HelperTextItem variant="error">
+                        Client private key is required
+                      </HelperTextItem>
+                    </HelperText>
+                  )}
+                </FlexItem>
+
+                <FlexItem>
+                  <CertificateField
+                    label="BCM CA certificate (optional)"
+                    description="Trust anchor for the BCM server certificate"
+                    value={bcmCaCert}
+                    onChange={(v) => setField("osacBcmCaCert", v)}
+                  />
+                </FlexItem>
+
+                <FlexItem>
+                  <FormGroup
+                    label="BareMetalHost namespace"
+                    isRequired
+                    fieldId="osac-bcm-bmh-namespace"
+                  >
+                    <TextInput
+                      id="osac-bcm-bmh-namespace"
+                      value={bcmBmhNamespace}
+                      onChange={(_e, val) =>
+                        setField("osacBcmBmhNamespace", val)
+                      }
+                      placeholder="openshift-machine-api"
+                      validated={bcmNsError ? "error" : "default"}
+                    />
+                  </FormGroup>
+                </FlexItem>
+
+                <FlexItem>
+                  <FormGroup label="Host class" fieldId="osac-bcm-host-class">
+                    <TextInput
+                      id="osac-bcm-host-class"
+                      value={bcmHostClass}
+                      onChange={(_e, val) =>
+                        setField("osacBcmHostClass", val)
+                      }
+                      placeholder="bcm"
+                    />
+                  </FormGroup>
+                </FlexItem>
+
+                <FlexItem>
+                  <FormGroup fieldId="osac-bcm-insecure">
+                    <Switch
+                      id="osac-bcm-insecure"
+                      label="Skip TLS verification (test environments only)"
+                      isChecked={bcmInsecure}
+                      onChange={(_e, checked) =>
+                        setField("osacBcmInsecureSkipVerify", checked)
+                      }
+                    />
+                  </FormGroup>
+                </FlexItem>
+              </>
+            )}
+          </Flex>
+        </FlexItem>
+      )}
 
       <FlexItem>
         <ExpandableSection

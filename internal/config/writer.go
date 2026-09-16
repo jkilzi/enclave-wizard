@@ -82,7 +82,7 @@ func removeIfExists(path string) {
 
 // buildOsacConfig reads OSAC fields without mutating the source.
 func buildOsacConfig(pc *models.PluginsConfig) *osacPluginConfig {
-	if pc.OsacProfile == nil && pc.OsacAapLicenseFile == nil && pc.OsacDnsClass == nil && pc.OsacDnsZone == nil && len(pc.ClusterFulfillmentConfig) == 0 {
+	if !pluginsConfigHasOsacYAML(pc) {
 		return nil
 	}
 	cfg := &osacPluginConfig{}
@@ -104,10 +104,60 @@ func buildOsacConfig(pc *models.PluginsConfig) *osacPluginConfig {
 	if pc.OsacDnsZone != nil {
 		cfg.OsacDnsZone = *pc.OsacDnsZone
 	}
+	if len(pc.OsacProfilesList) > 0 {
+		cfg.OsacProfilesList = pc.OsacProfilesList
+	}
+	if pc.OsacBcmEnabled != nil {
+		cfg.OsacBcmEnabled = pc.OsacBcmEnabled
+	}
+	if pc.OsacBcmUrl != nil {
+		cfg.OsacBcmUrl = *pc.OsacBcmUrl
+	}
+	if pc.OsacBcmCert != nil {
+		cfg.OsacBcmCert = *pc.OsacBcmCert
+	}
+	if pc.OsacBcmKey != nil {
+		cfg.OsacBcmKey = *pc.OsacBcmKey
+	}
+	if pc.OsacBcmCaCert != nil {
+		cfg.OsacBcmCaCert = *pc.OsacBcmCaCert
+	}
+	if pc.OsacBcmInsecureSkipVerify != nil {
+		cfg.OsacBcmInsecureSkipVerify = pc.OsacBcmInsecureSkipVerify
+	}
+	if pc.OsacBcmHostClass != nil {
+		cfg.OsacBcmHostClass = *pc.OsacBcmHostClass
+	}
+	if pc.OsacBcmBmhNamespace != nil {
+		cfg.OsacBcmBmhNamespace = *pc.OsacBcmBmhNamespace
+	}
+	if pc.OsacMetal3Enabled != nil {
+		cfg.OsacMetal3Enabled = pc.OsacMetal3Enabled
+	}
 	if len(pc.ClusterFulfillmentConfig) > 0 {
 		cfg.ClusterFulfillmentConfig = pc.ClusterFulfillmentConfig
 	}
 	return cfg
+}
+
+func pluginsConfigHasOsacYAML(pc *models.PluginsConfig) bool {
+	return pc.OsacProfile != nil ||
+		pc.OsacAapLicenseFile != nil ||
+		pc.OsacBYODatabase != nil ||
+		pc.OsacDatabaseUrl != nil ||
+		pc.OsacDnsClass != nil ||
+		pc.OsacDnsZone != nil ||
+		len(pc.OsacProfilesList) > 0 ||
+		pc.OsacBcmEnabled != nil ||
+		pc.OsacBcmUrl != nil ||
+		pc.OsacBcmCert != nil ||
+		pc.OsacBcmKey != nil ||
+		pc.OsacBcmCaCert != nil ||
+		pc.OsacBcmInsecureSkipVerify != nil ||
+		pc.OsacBcmHostClass != nil ||
+		pc.OsacBcmBmhNamespace != nil ||
+		pc.OsacMetal3Enabled != nil ||
+		len(pc.ClusterFulfillmentConfig) > 0
 }
 
 // buildRhbkConfig reads RHBK fields without mutating the source.

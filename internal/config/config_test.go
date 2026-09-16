@@ -409,6 +409,52 @@ func TestWriteAllThenReadAll_OsacPluginRoundTrips(t *testing.T) {
 	}
 }
 
+func TestWriteAllThenReadAll_OsacBcmFieldsRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	enabled := true
+	insecure := false
+	url := "https://bcm-head:8081"
+	cert := "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----\n"
+	key := "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n"
+	ns := "openshift-machine-api"
+	hostClass := "bcm"
+	profiles := []string{"bmaas"}
+
+	licensePath := "/opt/manifest.zip"
+	want := &models.EnclaveConfig{}
+	want.Global.OsacAapLicenseFile = &licensePath
+	want.Global.OsacProfilesList = profiles
+	want.Global.OsacBcmEnabled = &enabled
+	want.Global.OsacBcmUrl = &url
+	want.Global.OsacBcmCert = &cert
+	want.Global.OsacBcmKey = &key
+	want.Global.OsacBcmInsecureSkipVerify = &insecure
+	want.Global.OsacBcmHostClass = &hostClass
+	want.Global.OsacBcmBmhNamespace = &ns
+
+	if err := NewWriter(root).WriteAll(want); err != nil {
+		t.Fatalf("WriteAll: %v", err)
+	}
+
+	got, err := NewReader(root).ReadAll()
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+
+	if got.Global.OsacBcmEnabled == nil || !*got.Global.OsacBcmEnabled {
+		t.Errorf("OsacBcmEnabled: want true, got %v", got.Global.OsacBcmEnabled)
+	}
+	if got.Global.OsacBcmUrl == nil || *got.Global.OsacBcmUrl != url {
+		t.Errorf("OsacBcmUrl: want %q, got %v", url, got.Global.OsacBcmUrl)
+	}
+	if got.Global.OsacBcmBmhNamespace == nil || *got.Global.OsacBcmBmhNamespace != ns {
+		t.Errorf("OsacBcmBmhNamespace: want %q, got %v", ns, got.Global.OsacBcmBmhNamespace)
+	}
+	if len(got.Global.OsacProfilesList) != 1 || got.Global.OsacProfilesList[0] != "bmaas" {
+		t.Errorf("OsacProfilesList: want [bmaas], got %v", got.Global.OsacProfilesList)
+	}
+}
+
 func TestWriteAllThenReadAll_OsacDnsFieldsRoundTrip(t *testing.T) {
 	root := t.TempDir()
 	dnsClass := "dns.route53.dns"

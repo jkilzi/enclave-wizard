@@ -1,28 +1,28 @@
 
-# Plugin
+# Experience
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`defaults` | { [key: string]: any; }
+`description` | string
+`id` | string
 `name` | string
-`order` | number
-`type` | string
+`plugins` | [Array&lt;ExperiencePlugin&gt;](ExperiencePlugin.md)
 
 ## Example
 
 ```typescript
-import type { Plugin } from '@enclave-wizard-ui/api-client'
+import type { Experience } from '@enclave-wizard-ui/api-client'
 
 // TODO: Update the object below with actual values
 const example = {
-  "defaults": null,
+  "description": null,
+  "id": null,
   "name": null,
-  "order": null,
-  "type": null,
-} satisfies Plugin
+  "plugins": null,
+} satisfies Experience
 
 console.log(example)
 
@@ -31,7 +31,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as Plugin
+const exampleParsed = JSON.parse(exampleJSON) as Experience
 console.log(exampleParsed)
 ```
 

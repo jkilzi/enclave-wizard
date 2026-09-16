@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check authentication mode */
+        get: operations["authMode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/password": {
         parameters: {
             query?: never;
@@ -266,6 +283,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/experiences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List available experiences
+         * @description Returns experience definitions loaded from the enclave directory.
+         */
+        get: operations["list-experiences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a file
+         * @description Upload a file to the enclave config directory. The file is written to config/<dest>/<filename>.
+         */
+        post: operations["upload-file"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plugins": {
         parameters: {
             query?: never;
@@ -300,6 +357,26 @@ export interface paths {
          * @description Checks whether the given set of plugins forms a valid deployment combination.
          */
         post: operations["validate-plugin-combination"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/{name}/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get plugin config schema
+         * @description Returns the JSON schema for the named plugin's configuration. Used by the frontend for dynamic form rendering.
+         */
+        get: operations["get-plugin-schema"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -470,10 +547,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get wizard and enclave versions */
+        get: operations["getVersion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AAPConfig: {
+            /** @description Path to AAP license manifest.zip on the Landing Zone */
+            aapLicenseFile: string;
+            /** @description Disable the Automation Controller component */
+            aap_controller_disabled?: boolean;
+            /** @description Disable the Event-Driven Ansible component */
+            aap_eda_disabled?: boolean;
+            /** @description Disable the Automation Hub component */
+            aap_hub_disabled?: boolean;
+            /**
+             * @description Image pull policy for AAP pods
+             * @enum {string}
+             */
+            aap_image_pull_policy?: "Always" | "IfNotPresent" | "Never";
+            /** @description Name of the Kubernetes secret holding the AAP license */
+            aap_license_secret?: string;
+            /** @description Disable the Ansible Lightspeed component */
+            aap_lightspeed_disabled?: boolean;
+            /** @description Name of the AAP instance */
+            aap_name?: string;
+            /** @description Suppress sensitive log output */
+            aap_no_log?: boolean;
+            /** @description Namespace for the AAP deployment */
+            aap_ns?: string;
+            /**
+             * @description Redis deployment mode
+             * @enum {string}
+             */
+            aap_redis_mode?: "standalone" | "cluster";
+            /**
+             * @description TLS termination type for AAP routes
+             * @enum {string}
+             */
+            aap_route_tls_termination?: "Edge" | "Passthrough" | "Reencrypt";
+        };
+        AuthModeOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/AuthModeOutputBody.json
+             */
+            readonly $schema?: string;
+            /** @description True if authentication is disabled */
+            noAuth: boolean;
+        };
         CertificatesConfig: {
             /**
              * Format: uri
@@ -560,8 +699,8 @@ export interface components {
             pullSecret: unknown;
             /** @description IP of first control-plane node */
             rendezvousIP: string;
-            /** @description Path to SSH public key file */
-            sshPubPath: string;
+            /** @description SSH public key content (e.g. ssh-rsa AAAA...) */
+            sshPubKey?: string;
         };
         Defaults: {
             /**
@@ -572,13 +711,13 @@ export interface components {
             readonly $schema?: string;
             disconnected: boolean;
             diskEncryption: boolean;
-            lvmsDefaults?: components["schemas"]["LVMSConfig"];
             /** Format: int64 */
             masterMaxPods: number;
             ocMirrorLogLevel: string;
-            odfDefaults?: components["schemas"]["ODFConfig"];
+            pluginDefaults?: {
+                [key: string]: unknown;
+            };
             storagePlugin: string;
-            vastDefaults?: components["schemas"]["VASTConfig"];
         };
         EnclaveConfig: {
             /**
@@ -641,23 +780,50 @@ export interface components {
              */
             type: string;
         };
-        GetTaskEventsOutputBody: {
+        Experience: {
+            description: string;
+            id: string;
+            name: string;
+            plugins: components["schemas"]["ExperiencePlugin"][] | null;
+        };
+        ExperiencePlugin: {
+            name: string;
+            /** Format: int64 */
+            order?: number;
+        };
+        ExperiencesOutputBody: {
             /**
              * Format: uri
              * @description A URL to the JSON Schema for this object.
-             * @example https://example.com/schemas/GetTaskEventsOutputBody.json
+             * @example https://example.com/schemas/ExperiencesOutputBody.json
              */
             readonly $schema?: string;
-            /** @description Ansible Runner job events */
-            events: unknown[] | null;
+            /** @description Available experience definitions */
+            experiences: components["schemas"]["Experience"][] | null;
+        };
+        FileUploadOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/FileUploadOutputBody.json
+             */
+            readonly $schema?: string;
+            /** @description Absolute path where the file was written */
+            path: string;
         };
         GlobalConfig: {
+            /** @description AAP deployment configuration */
+            aapDefaults?: components["schemas"]["AAPConfig"];
             /** @description Control plane nodes (exactly 3) */
             agent_hosts: components["schemas"]["HostEntry"][] | null;
             /** @description Virtual IP for Kubernetes API server */
             apiVIP: string;
             /** @description Base DNS domain for the cluster */
             baseDomain: string;
+            /** @description Cluster fulfillment configuration (passed through to osac-installer Helm values) */
+            clusterFulfillmentConfig?: {
+                [key: string]: string;
+            };
             /** @description OpenShift cluster name */
             clusterName: string;
             /** @description DNS server IP for cluster nodes */
@@ -671,12 +837,12 @@ export interface components {
              * @description Subnet prefix length
              */
             defaultPrefix: number;
-            /** @description Air-gapped deployment mode (default: true) */
-            disconnected?: boolean;
+            /** @description Air-gapped deployment mode */
+            disconnected: boolean | null;
             /** @description Enable TPM v2 disk encryption */
             diskEncryption?: boolean;
             /** @description Plugins to deploy */
-            enabled_plugins?: string[] | null;
+            enabled_plugins: string[] | null;
             /** @description Virtual IP for ingress wildcard */
             ingressVIP: string;
             /** @description LVMS device selector configuration */
@@ -701,6 +867,28 @@ export interface components {
             odfDefaults?: components["schemas"]["ODFConfig"];
             /** @description ODF external Ceph cluster config JSON (required when storage_plugin is odf) */
             odfExternalConfig?: string;
+            /** @description Path to AAP license manifest.zip on the landing zone */
+            osacAapLicenseFile?: string;
+            /** @description Use external PostgreSQL instead of built-in */
+            osacBYODatabase?: boolean;
+            /** @description Namespace where BareMetalHost CRs are created for Metal3 power management */
+            osacBcmBmhNamespace?: string;
+            /** @description PEM-encoded CA certificate for verifying BCM server cert (optional) */
+            osacBcmCaCert?: string;
+            /** @description PEM-encoded client certificate for BCM mTLS authentication */
+            osacBcmCert?: string;
+            /** @description Enable BCM inventory backend for bare metal fulfillment */
+            osacBcmEnabled?: boolean;
+            /** @description Host class identifier for BCM inventory (default: bcm) */
+            osacBcmHostClass?: string;
+            /** @description Skip TLS verification of BCM server certificate (test environments only) */
+            osacBcmInsecureSkipVerify?: boolean;
+            /** @description PEM-encoded client private key for BCM mTLS authentication */
+            osacBcmKey?: string;
+            /** @description BCM head node API endpoint (e.g. https://bcm-head:8081) */
+            osacBcmUrl?: string;
+            /** @description PostgreSQL connection URL when using BYO database */
+            osacDatabaseUrl?: string;
             /**
              * @description Fully-qualified Ansible role name of the DNS driver
              * @enum {string}
@@ -708,6 +896,15 @@ export interface components {
             osacDnsClass?: "dns.route53.dns";
             /** @description DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN) */
             osacDnsZone?: string;
+            /** @description Enable Metal3 inventory backend for bare metal fulfillment */
+            osacMetal3Enabled?: boolean;
+            /**
+             * @description OSAC deployment profile
+             * @enum {string}
+             */
+            osacProfile?: "development" | "caas" | "vmaas" | "bmaas";
+            /** @description List of enabled service profiles: vmaas, caas, bmaas */
+            osacProfilesList?: string[] | null;
             /** @description OpenShift pull secret object */
             pullSecret: unknown;
             /**
@@ -723,13 +920,24 @@ export interface components {
             quayUser: string;
             /** @description IP of first control-plane node */
             rendezvousIP: string;
-            /** @description Path to SSH public key file */
-            sshPubPath: string;
+            /** @description PVC size for Keycloak PostgreSQL */
+            rhbk_db_size?: string;
+            /** @description Deploy PostgreSQL alongside Keycloak */
+            rhbk_deploy_database?: boolean;
+            /**
+             * Format: int64
+             * @description Number of Keycloak replicas
+             */
+            rhbk_instances?: number;
+            /** @description SSH public key content (e.g. ssh-rsa AAAA...) */
+            sshPubKey?: string;
             /**
              * @description Storage plugin
              * @enum {string}
              */
             storage_plugin: "lvms" | "odf" | "vast-csi";
+            /** @description Trust-manager CA issuer configuration */
+            trustManagerDefaults?: components["schemas"]["TrustManagerConfig"];
             /** @description VAST management API password */
             vastAdminPassword?: string;
             /** @description VAST management API username */
@@ -802,24 +1010,14 @@ export interface components {
              * @example https://example.com/schemas/LandingZoneConfig.json
              */
             readonly $schema?: string;
-            /** @description Air-gapped deployment mode (default: true) */
-            disconnected?: boolean;
+            /** @description Air-gapped deployment mode */
+            disconnected: boolean | null;
             /** @description DNS hostname for landing zone BMC interface */
             lzBmcHostname?: string;
             /** @description Landing zone BMC IP for boot ISO serving */
             lzBmcIP: string;
             /** @description Absolute path to root working directory */
             workingDir: string;
-        };
-        ListTasksOutputBody: {
-            /**
-             * Format: uri
-             * @description A URL to the JSON Schema for this object.
-             * @example https://example.com/schemas/ListTasksOutputBody.json
-             */
-            readonly $schema?: string;
-            /** @description All known task runs */
-            runs: components["schemas"]["TaskRun"][] | null;
         };
         LoginInputBody: {
             /**
@@ -867,10 +1065,17 @@ export interface components {
             defaultStorageClass: boolean;
         };
         Plugin: {
-            /** @description Human-readable description */
-            description: string;
+            /** @description Plugin default configuration values */
+            defaults?: {
+                [key: string]: unknown;
+            };
             /** @description Plugin identifier */
             name: string;
+            /**
+             * Format: int64
+             * @description Deployment order within type
+             */
+            order?: number;
             /**
              * @description Plugin type
              * @enum {string}
@@ -906,12 +1111,40 @@ export interface components {
              * @example https://example.com/schemas/PluginsConfig.json
              */
             readonly $schema?: string;
+            /** @description AAP deployment configuration */
+            aapDefaults?: components["schemas"]["AAPConfig"];
+            /** @description Cluster fulfillment configuration (passed through to osac-installer Helm values) */
+            clusterFulfillmentConfig?: {
+                [key: string]: string;
+            };
             /** @description Plugins to deploy */
-            enabled_plugins?: string[] | null;
+            enabled_plugins: string[] | null;
             /** @description LVMS deployment configuration */
             lvmsDefaults?: components["schemas"]["LVMSConfig"];
             /** @description ODF deployment configuration */
             odfDefaults?: components["schemas"]["ODFConfig"];
+            /** @description Path to AAP license manifest.zip on the landing zone */
+            osacAapLicenseFile?: string;
+            /** @description Use external PostgreSQL instead of built-in */
+            osacBYODatabase?: boolean;
+            /** @description Namespace where BareMetalHost CRs are created for Metal3 power management */
+            osacBcmBmhNamespace?: string;
+            /** @description PEM-encoded CA certificate for verifying BCM server cert (optional) */
+            osacBcmCaCert?: string;
+            /** @description PEM-encoded client certificate for BCM mTLS authentication */
+            osacBcmCert?: string;
+            /** @description Enable BCM inventory backend for bare metal fulfillment */
+            osacBcmEnabled?: boolean;
+            /** @description Host class identifier for BCM inventory (default: bcm) */
+            osacBcmHostClass?: string;
+            /** @description Skip TLS verification of BCM server certificate (test environments only) */
+            osacBcmInsecureSkipVerify?: boolean;
+            /** @description PEM-encoded client private key for BCM mTLS authentication */
+            osacBcmKey?: string;
+            /** @description BCM head node API endpoint (e.g. https://bcm-head:8081) */
+            osacBcmUrl?: string;
+            /** @description PostgreSQL connection URL when using BYO database */
+            osacDatabaseUrl?: string;
             /**
              * @description Fully-qualified Ansible role name of the DNS driver
              * @enum {string}
@@ -919,6 +1152,26 @@ export interface components {
             osacDnsClass?: "dns.route53.dns";
             /** @description DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN) */
             osacDnsZone?: string;
+            /** @description Enable Metal3 inventory backend for bare metal fulfillment */
+            osacMetal3Enabled?: boolean;
+            /**
+             * @description OSAC deployment profile
+             * @enum {string}
+             */
+            osacProfile?: "development" | "caas" | "vmaas" | "bmaas";
+            /** @description List of enabled service profiles: vmaas, caas, bmaas */
+            osacProfilesList?: string[] | null;
+            /** @description PVC size for Keycloak PostgreSQL */
+            rhbk_db_size?: string;
+            /** @description Deploy PostgreSQL alongside Keycloak */
+            rhbk_deploy_database?: boolean;
+            /**
+             * Format: int64
+             * @description Number of Keycloak replicas
+             */
+            rhbk_instances?: number;
+            /** @description Trust-manager CA issuer configuration */
+            trustManagerDefaults?: components["schemas"]["TrustManagerConfig"];
             /** @description VAST CSI deployment defaults */
             vastDefaults?: components["schemas"]["VASTConfig"];
         };
@@ -1074,6 +1327,32 @@ export interface components {
              */
             type: "deploy" | "deploy-phase" | "deploy-plugin" | "validate";
         };
+        ListTasksOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/ListTasksOutputBody.json
+             */
+            readonly $schema?: string;
+            /** @description All known task runs */
+            runs: components["schemas"]["TaskRun"][] | null;
+        };
+        GetTaskEventsOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/GetTaskEventsOutputBody.json
+             */
+            readonly $schema?: string;
+            /** @description Ansible Runner job events */
+            events: unknown[] | null;
+        };
+        TrustManagerConfig: {
+            /** @description CA certificate lifetime (e.g. 87600h for 10 years) */
+            trust_manager_ca_issuer_duration?: string;
+            /** @description How long before expiry to renew the CA (e.g. 8760h for 1 year) */
+            trust_manager_ca_issuer_renew_before?: string;
+        };
         VASTConfig: {
             /** @description Tenant name for infrastructure resources */
             infraTenant?: string;
@@ -1131,6 +1410,18 @@ export interface components {
             /** @description Human-readable error description */
             message: string;
         };
+        VersionOutputBody: {
+            /**
+             * Format: uri
+             * @description A URL to the JSON Schema for this object.
+             * @example https://example.com/schemas/VersionOutputBody.json
+             */
+            readonly $schema?: string;
+            /** @description Enclave version or git hash */
+            enclaveVersion: string;
+            /** @description Enclave Wizard version or git hash */
+            wizardVersion: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1160,6 +1451,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorModel"];
+                };
+            };
+        };
+    };
+    authMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthModeOutputBody"];
                 };
             };
             /** @description Error */
@@ -1841,6 +2161,76 @@ export interface operations {
             };
         };
     };
+    "list-experiences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperiencesOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorModel"];
+                };
+            };
+        };
+    };
+    "upload-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description filename of the file being uploaded
+                     */
+                    filename?: string;
+                    /** @description general purpose name for multipart form value */
+                    name?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileUploadOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorModel"];
+                };
+            };
+        };
+    };
     "list-plugins": {
         parameters: {
             query?: never;
@@ -1890,6 +2280,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PluginValidateOutputBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorModel"];
+                };
+            };
+        };
+    };
+    "get-plugin-schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Plugin name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Error */
@@ -2167,6 +2589,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": string;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorModel"];
+                };
+            };
+        };
+    };
+    getVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionOutputBody"];
                 };
             };
             /** @description Error */

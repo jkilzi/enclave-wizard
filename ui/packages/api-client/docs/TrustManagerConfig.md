@@ -1,28 +1,24 @@
 
-# Plugin
+# TrustManagerConfig
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`defaults` | { [key: string]: any; }
-`name` | string
-`order` | number
-`type` | string
+`trustManagerCaIssuerDuration` | string
+`trustManagerCaIssuerRenewBefore` | string
 
 ## Example
 
 ```typescript
-import type { Plugin } from '@enclave-wizard-ui/api-client'
+import type { TrustManagerConfig } from '@enclave-wizard-ui/api-client'
 
 // TODO: Update the object below with actual values
 const example = {
-  "defaults": null,
-  "name": null,
-  "order": null,
-  "type": null,
-} satisfies Plugin
+  "trustManagerCaIssuerDuration": null,
+  "trustManagerCaIssuerRenewBefore": null,
+} satisfies TrustManagerConfig
 
 console.log(example)
 
@@ -31,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as Plugin
+const exampleParsed = JSON.parse(exampleJSON) as TrustManagerConfig
 console.log(exampleParsed)
 ```
 
