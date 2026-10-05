@@ -216,6 +216,60 @@ func TestConfigRoundTrip_OsacPlugin(t *testing.T) {
 	}
 }
 
+func TestConfigRoundTrip_OsacNetworking(t *testing.T) {
+	srv, enclaveDir := setupConfigAPI(t)
+	defer srv.Close()
+
+	controllerURL := "https://ctl.netris.example.com"
+	username := "admin"
+	password := "pass"
+	siteID := "10"
+	tenantID := "20"
+	tenantName := "tenant-a"
+
+	cfg := validConfig()
+	cfg.Global.OsacNetworking = &models.OsacNetworkingConfig{
+		FabricManager: "netris",
+		K8sManager:    "",
+		Netris: &models.OsacNetworkingNetris{
+			ControllerUrl: &controllerURL,
+			Credentials: &models.OsacNetworkingCredentials{
+				Username: &username,
+				Password: &password,
+			},
+			SiteId:     &siteID,
+			TenantId:   &tenantID,
+			TenantName: &tenantName,
+		},
+	}
+
+	putConfig(t, srv, cfg)
+
+	osac := readYAMLOnDisk(t, filepath.Join(enclaveDir, "config", "plugins", "osac.yaml"))
+	networking, ok := osac["osacNetworking"].(map[string]any)
+	if !ok {
+		t.Fatalf("osacNetworking: want map, got %T", osac["osacNetworking"])
+	}
+	if networking["fabricManager"] != "netris" {
+		t.Errorf("fabricManager: want netris, got %v", networking["fabricManager"])
+	}
+	if networking["k8sManager"] != "" {
+		t.Errorf("k8sManager: want \"\", got %v", networking["k8sManager"])
+	}
+	netris, ok := networking["netris"].(map[string]any)
+	if !ok {
+		t.Fatalf("netris: want map, got %T", networking["netris"])
+	}
+	if netris["controllerUrl"] != controllerURL {
+		t.Errorf("controllerUrl: want %q, got %v", controllerURL, netris["controllerUrl"])
+	}
+
+	global := readYAMLOnDisk(t, filepath.Join(enclaveDir, "config", "global.yaml"))
+	if _, ok := global["osacNetworking"]; ok {
+		t.Error("osacNetworking should NOT leak into global.yaml")
+	}
+}
+
 func TestConfigRoundTrip_OsacDnsFields(t *testing.T) {
 	srv, enclaveDir := setupConfigAPI(t)
 	defer srv.Close()

@@ -34,6 +34,11 @@ import { useWizardInit } from "./hooks/useWizardInit.ts";
 import {
   validateOsacInventoryBackends,
 } from "./osacBcmValidation.ts";
+import {
+  DEFAULT_OSAC_NETWORKING,
+  isOsacNetworkingUnset,
+  validateOsacNetworking,
+} from "./osacNetworkingValidation.ts";
 import { STEP_REQUIRED_FIELDS } from "./stepFields.ts";
 import { AAPStep } from "./steps/AAPStep.tsx";
 import { CaasStep } from "./steps/CaasStep.tsx";
@@ -384,6 +389,13 @@ function WizardContent(): React.ReactElement {
               value: [d.storagePlugin ?? "lvms"],
             });
           }
+          if (isOsacNetworkingUnset({ osacNetworking: g.osacNetworking })) {
+            dispatch({
+              type: "SET_FIELD",
+              path: "global.osacNetworking",
+              value: DEFAULT_OSAC_NETWORKING,
+            });
+          }
         }
 
         // Always connected mode (disconnected greyed out in UI)
@@ -545,6 +557,7 @@ function WizardContent(): React.ReactElement {
         });
       }
       errors.push(...validateOsacInventoryBackends(globalData));
+      errors.push(...validateOsacNetworking(globalData));
     }
 
     if (currentSubStepId === "caas") {

@@ -22,9 +22,17 @@ import {
 import { css as pfCss } from "@patternfly/react-styles";
 import formStyles from "@patternfly/react-styles/css/components/Form/form.mjs";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFileUpload } from "../../api/useFileUpload.ts";
 import { CertificateField } from "../components/CertificateField.tsx";
+import {
+  DEFAULT_OSAC_NETWORKING,
+  getOsacNetworking,
+  isNetrisFabricManager,
+  isOsacNetworkingUnset,
+  isValidNetrisControllerUrl,
+  type OsacNetworkingData,
+} from "../osacNetworkingValidation.ts";
 import { useWizard } from "../WizardContext.tsx";
 import { stepStyles } from "./stepStyles.ts";
 
@@ -120,6 +128,17 @@ export const OsacStep: React.FC = () => {
   const metal3Namespace = (globalData.osacMetal3Namespace as string) ?? "";
   const metal3HostClass = (globalData.osacMetal3HostClass as string) ?? "";
 
+  const networking = getOsacNetworking(globalData);
+  const netrisSelected = isNetrisFabricManager(networking);
+  const netris = networking.netris ?? {};
+  const netrisCredentials = netris.credentials ?? {};
+  const netrisControllerUrl = netris.controllerUrl ?? "";
+  const netrisUsername = netrisCredentials.username ?? "";
+  const netrisPassword = netrisCredentials.password ?? "";
+  const netrisSiteId = netris.siteId ?? "";
+  const netrisTenantId = netris.tenantId ?? "";
+  const netrisTenantName = netris.tenantName ?? "";
+
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [uploadFilename, setUploadFilename] = useState("");
   const { upload, uploading, error: uploadError } = useFileUpload();
@@ -128,6 +147,83 @@ export const OsacStep: React.FC = () => {
     (field: string, value: unknown) =>
       dispatch({ type: "SET_FIELD", path: `global.${field}`, value }),
     [dispatch],
+  );
+
+  const setNetworking = useCallback(
+    (next: OsacNetworkingData) => setField("osacNetworking", next),
+    [setField],
+  );
+
+  useEffect(() => {
+    if (isOsacNetworkingUnset({ osacNetworking: globalData.osacNetworking })) {
+      setNetworking(DEFAULT_OSAC_NETWORKING);
+    }
+  }, [globalData.osacNetworking, setNetworking]);
+
+  const setFabricManager = useCallback(
+    (mode: "none" | "netris") => {
+      if (mode === "none") {
+        setNetworking({ fabricManager: "", k8sManager: "k8s_only" });
+        return;
+      }
+      setNetworking({
+        fabricManager: "netris",
+        k8sManager: "",
+        netris: {
+          controllerUrl: netrisControllerUrl,
+          credentials: {
+            username: netrisUsername,
+            password: netrisPassword,
+          },
+          siteId: netrisSiteId,
+          tenantId: netrisTenantId,
+          tenantName: netrisTenantName,
+        },
+      });
+    },
+    [
+      setNetworking,
+      netrisControllerUrl,
+      netrisUsername,
+      netrisPassword,
+      netrisSiteId,
+      netrisTenantId,
+      netrisTenantName,
+    ],
+  );
+
+  const patchNetris = useCallback(
+    (patch: NonNullable<OsacNetworkingData["netris"]>) => {
+      setNetworking({
+        fabricManager: "netris",
+        k8sManager: "",
+        netris: {
+          controllerUrl: netrisControllerUrl,
+          credentials: {
+            username: netrisUsername,
+            password: netrisPassword,
+          },
+          siteId: netrisSiteId,
+          tenantId: netrisTenantId,
+          tenantName: netrisTenantName,
+          ...patch,
+          credentials: {
+            username: netrisUsername,
+            password: netrisPassword,
+            ...patch.credentials,
+          },
+        },
+      });
+    },
+    [
+      setNetworking,
+      netrisControllerUrl,
+      netrisUsername,
+      netrisPassword,
+      netrisSiteId,
+      netrisTenantId,
+      netrisTenantName,
+    ],
   );
 
   const handleFileUpload = useCallback(
@@ -166,6 +262,22 @@ export const OsacStep: React.FC = () => {
     state.showValidation && bcmEnabled && !bcmBmhNamespace.trim();
   const metal3NsError =
     state.showValidation && metal3Enabled && !metal3Namespace.trim();
+
+  const netrisUrlError =
+    state.showValidation &&
+    netrisSelected &&
+    (!netrisControllerUrl.trim() ||
+      !isValidNetrisControllerUrl(netrisControllerUrl));
+  const netrisUsernameError =
+    state.showValidation && netrisSelected && !netrisUsername.trim();
+  const netrisPasswordError =
+    state.showValidation && netrisSelected && !netrisPassword.trim();
+  const netrisSiteIdError =
+    state.showValidation && netrisSelected && !netrisSiteId.trim();
+  const netrisTenantIdError =
+    state.showValidation && netrisSelected && !netrisTenantId.trim();
+  const netrisTenantNameError =
+    state.showValidation && netrisSelected && !netrisTenantName.trim();
 
   return (
     <Flex direction={{ default: "column" }} gap={{ default: "gapLg" }}>
@@ -237,6 +349,130 @@ export const OsacStep: React.FC = () => {
               </FormHelperText>
             )}
           </FormGroup>
+
+          <FormSection aria-labelledby="osac-networking-title">
+            <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+              <h4
+                id="osac-networking-title"
+                className={pfCss(formStyles.formSectionTitle)}
+              >
+                Networking
+              </h4>
+              <Content component="p" className={stepStyles.formSectionIntro}>
+                Choose the platform fabric manager. Agentless (Kubernetes-only)
+                is the default; select Netris to connect a fabric controller.
+              </Content>
+            </Flex>
+            <FormGroup
+              fieldId="osac-fabric-manager"
+              role="radiogroup"
+              aria-label="Fabric manager"
+            >
+              <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
+                <Radio
+                  id="osac-fabric-none"
+                  name="osac-fabric-manager"
+                  label="None (Kubernetes-only)"
+                  description="No fabric manager — use the installer Kubernetes networking profile (k8s_only)."
+                  isChecked={!netrisSelected}
+                  onChange={() => setFabricManager("none")}
+                />
+                <Radio
+                  id="osac-fabric-netris"
+                  name="osac-fabric-manager"
+                  label="Netris"
+                  description="Configure Netris as the fabric manager for cluster and network fulfillment."
+                  isChecked={netrisSelected}
+                  onChange={() => setFabricManager("netris")}
+                />
+              </Flex>
+            </FormGroup>
+
+            {netrisSelected && (
+              <>
+                <FormGroup
+                  label="Controller URL"
+                  isRequired
+                  fieldId="osac-netris-controller-url"
+                >
+                  <TextInput
+                    id="osac-netris-controller-url"
+                    value={netrisControllerUrl}
+                    onChange={(_e, val) =>
+                      patchNetris({ controllerUrl: val })
+                    }
+                    placeholder="https://ctl.netris.example.com"
+                    validated={netrisUrlError ? "error" : "default"}
+                  />
+                </FormGroup>
+                <FormGroup
+                  label="Username"
+                  isRequired
+                  fieldId="osac-netris-username"
+                >
+                  <TextInput
+                    id="osac-netris-username"
+                    value={netrisUsername}
+                    onChange={(_e, val) =>
+                      patchNetris({ credentials: { username: val } })
+                    }
+                    validated={netrisUsernameError ? "error" : "default"}
+                  />
+                </FormGroup>
+                <FormGroup
+                  label="Password"
+                  isRequired
+                  fieldId="osac-netris-password"
+                >
+                  <TextInput
+                    id="osac-netris-password"
+                    type="password"
+                    value={netrisPassword}
+                    onChange={(_e, val) =>
+                      patchNetris({ credentials: { password: val } })
+                    }
+                    validated={netrisPasswordError ? "error" : "default"}
+                  />
+                </FormGroup>
+                <FormGroup
+                  label="Site ID"
+                  isRequired
+                  fieldId="osac-netris-site-id"
+                >
+                  <TextInput
+                    id="osac-netris-site-id"
+                    value={netrisSiteId}
+                    onChange={(_e, val) => patchNetris({ siteId: val })}
+                    validated={netrisSiteIdError ? "error" : "default"}
+                  />
+                </FormGroup>
+                <FormGroup
+                  label="Tenant ID"
+                  isRequired
+                  fieldId="osac-netris-tenant-id"
+                >
+                  <TextInput
+                    id="osac-netris-tenant-id"
+                    value={netrisTenantId}
+                    onChange={(_e, val) => patchNetris({ tenantId: val })}
+                    validated={netrisTenantIdError ? "error" : "default"}
+                  />
+                </FormGroup>
+                <FormGroup
+                  label="Tenant name"
+                  isRequired
+                  fieldId="osac-netris-tenant-name"
+                >
+                  <TextInput
+                    id="osac-netris-tenant-name"
+                    value={netrisTenantName}
+                    onChange={(_e, val) => patchNetris({ tenantName: val })}
+                    validated={netrisTenantNameError ? "error" : "default"}
+                  />
+                </FormGroup>
+              </>
+            )}
+          </FormSection>
 
           {showBcm && (
             <FormSection aria-labelledby="osac-bare-metal-provisioning-title">

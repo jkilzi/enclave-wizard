@@ -896,6 +896,7 @@ export interface components {
             osacDnsClass?: "dns.route53.dns";
             /** @description DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN) */
             osacDnsZone?: string;
+            osacNetworking?: components["schemas"]["OsacNetworkingConfig"];
             /** @description Enable Metal3 inventory backend for bare metal fulfillment */
             osacMetal3Enabled?: boolean;
             /** @description Host class identifier for Metal3 inventory (default: metal3) */
@@ -1068,6 +1069,40 @@ export interface components {
             /** @description Set as default StorageClass */
             defaultStorageClass: boolean;
         };
+        OsacNetworkingConfig: {
+            /** @description Fabric manager profile: empty string, netris, or reserved cudn_net/vlan */
+            fabricManager: string;
+            /** @description Kubernetes manager profile: empty string or k8s_only */
+            k8sManager: string;
+            /** @description Netris fabric manager configuration */
+            netris?: components["schemas"]["OsacNetworkingNetris"];
+        };
+        OsacNetworkingCredentials: {
+            /** @description Use externally managed netris-credentials Secret instead of inline password */
+            externalSecret?: boolean;
+            /** @description Netris API password (inline) */
+            password?: string;
+            /** @description Netris API username */
+            username?: string;
+        };
+        OsacNetworkingNetris: {
+            /** @description Netris controller API URL (HTTPS) */
+            controllerUrl?: string;
+            /** @description Netris API credentials */
+            credentials?: components["schemas"]["OsacNetworkingCredentials"];
+            /** @description Management VPC ID in Netris */
+            mgmtVpcId?: string;
+            /** @description Management VPC name in Netris */
+            mgmtVpcName?: string;
+            /** @description JSON mapping resource classes to Netris server cluster templates */
+            resourceClassMap?: string;
+            /** @description Netris site ID */
+            siteId?: string;
+            /** @description Netris tenant ID */
+            tenantId?: string;
+            /** @description Netris tenant name */
+            tenantName?: string;
+        };
         Plugin: {
             /** @description Plugin default configuration values */
             defaults?: {
@@ -1156,6 +1191,7 @@ export interface components {
             osacDnsClass?: "dns.route53.dns";
             /** @description DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN) */
             osacDnsZone?: string;
+            osacNetworking?: components["schemas"]["OsacNetworkingConfig"];
             /** @description Enable Metal3 inventory backend for bare metal fulfillment */
             osacMetal3Enabled?: boolean;
             /** @description Host class identifier for Metal3 inventory (default: metal3) */

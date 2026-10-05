@@ -570,6 +570,8 @@ components:
           description: DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
           pattern: ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.?$
           type: string
+        osacNetworking:
+          $ref: "#/components/schemas/OsacNetworkingConfig"
         osacMetal3Enabled:
           description: Enable Metal3 inventory backend for bare metal fulfillment
           type: boolean
@@ -902,6 +904,70 @@ components:
       required:
         - defaultStorageClass
       type: object
+    OsacNetworkingConfig:
+      additionalProperties: false
+      properties:
+        fabricManager:
+          description: "Fabric manager profile: empty string, netris, or reserved cudn_net/vlan"
+          type: string
+        k8sManager:
+          description: "Kubernetes manager profile: empty string or k8s_only"
+          type: string
+        netris:
+          $ref: "#/components/schemas/OsacNetworkingNetris"
+          description: Netris fabric manager configuration
+      required:
+        - fabricManager
+        - k8sManager
+      type: object
+    OsacNetworkingCredentials:
+      additionalProperties: false
+      properties:
+        externalSecret:
+          description: Use externally managed netris-credentials Secret instead of inline password
+          type: boolean
+        password:
+          description: Netris API password (inline)
+          minLength: 1
+          type: string
+        username:
+          description: Netris API username
+          minLength: 1
+          type: string
+      type: object
+    OsacNetworkingNetris:
+      additionalProperties: false
+      properties:
+        controllerUrl:
+          description: Netris controller API URL (HTTPS)
+          minLength: 1
+          pattern: ^https://
+          type: string
+        credentials:
+          $ref: "#/components/schemas/OsacNetworkingCredentials"
+          description: Netris API credentials
+        mgmtVpcId:
+          description: Management VPC ID in Netris
+          type: string
+        mgmtVpcName:
+          description: Management VPC name in Netris
+          type: string
+        resourceClassMap:
+          description: JSON mapping resource classes to Netris server cluster templates
+          type: string
+        siteId:
+          description: Netris site ID
+          minLength: 1
+          type: string
+        tenantId:
+          description: Netris tenant ID
+          minLength: 1
+          type: string
+        tenantName:
+          description: Netris tenant name
+          minLength: 1
+          type: string
+      type: object
     Plugin:
       additionalProperties: false
       properties:
@@ -1050,6 +1116,8 @@ components:
           description: DNS zone to operate in (defaults to EXTERNAL_ACCESS_BASE_DOMAIN)
           pattern: ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.?$
           type: string
+        osacNetworking:
+          $ref: "#/components/schemas/OsacNetworkingConfig"
         osacMetal3Enabled:
           description: Enable Metal3 inventory backend for bare metal fulfillment
           type: boolean
