@@ -55,6 +55,13 @@ import {
     HostEntryToJSON,
     HostEntryToJSONTyped,
 } from './HostEntry.js';
+import type { OsacNetworkingConfig } from './OsacNetworkingConfig.js';
+import {
+    OsacNetworkingConfigFromJSON,
+    OsacNetworkingConfigFromJSONTyped,
+    OsacNetworkingConfigToJSON,
+    OsacNetworkingConfigToJSONTyped,
+} from './OsacNetworkingConfig.js';
 import type { VASTVipPool } from './VASTVipPool.js';
 import {
     VASTVipPoolFromJSON,
@@ -69,11 +76,6 @@ import {
     TrustManagerConfigToJSON,
     TrustManagerConfigToJSONTyped,
 } from './TrustManagerConfig.js';
-import type { OsacNetworkingConfig } from './OsacNetworkingConfig.js';
-import {
-    OsacNetworkingConfigFromJSON,
-    OsacNetworkingConfigToJSON,
-} from './OsacNetworkingConfig.js';
 
 /**
  * 
@@ -292,7 +294,7 @@ export interface GlobalConfig {
      */
     osacDnsZone?: string;
     /**
-     * High-level networking profile passed through to Helm global.networking
+     * 
      * @type {OsacNetworkingConfig}
      * @memberof GlobalConfig
      */

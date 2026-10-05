@@ -25,6 +25,7 @@ Name | Type
 `osacDatabaseUrl` | string
 `osacDnsClass` | string
 `osacDnsZone` | string
+`osacNetworking` | [OsacNetworkingConfig](OsacNetworkingConfig.md)
 `osacMetal3Enabled` | boolean
 `osacMetal3HostClass` | string
 `osacMetal3Namespace` | string
@@ -62,6 +63,7 @@ const example = {
   "osacDatabaseUrl": null,
   "osacDnsClass": null,
   "osacDnsZone": null,
+  "osacNetworking": null,
   "osacMetal3Enabled": null,
   "osacMetal3HostClass": null,
   "osacMetal3Namespace": null,

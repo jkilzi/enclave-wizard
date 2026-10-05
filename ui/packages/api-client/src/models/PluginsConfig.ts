@@ -34,6 +34,13 @@ import {
     ODFConfigToJSON,
     ODFConfigToJSONTyped,
 } from './ODFConfig.js';
+import type { OsacNetworkingConfig } from './OsacNetworkingConfig.js';
+import {
+    OsacNetworkingConfigFromJSON,
+    OsacNetworkingConfigFromJSONTyped,
+    OsacNetworkingConfigToJSON,
+    OsacNetworkingConfigToJSONTyped,
+} from './OsacNetworkingConfig.js';
 import type { LVMSConfig } from './LVMSConfig.js';
 import {
     LVMSConfigFromJSON,
@@ -48,11 +55,6 @@ import {
     TrustManagerConfigToJSON,
     TrustManagerConfigToJSONTyped,
 } from './TrustManagerConfig.js';
-import type { OsacNetworkingConfig } from './OsacNetworkingConfig.js';
-import {
-    OsacNetworkingConfigFromJSON,
-    OsacNetworkingConfigToJSON,
-} from './OsacNetworkingConfig.js';
 
 /**
  * 
@@ -175,7 +177,7 @@ export interface PluginsConfig {
      */
     osacDnsZone?: string;
     /**
-     * High-level networking profile passed through to Helm global.networking
+     * 
      * @type {OsacNetworkingConfig}
      * @memberof PluginsConfig
      */

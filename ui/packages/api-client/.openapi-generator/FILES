@@ -39,6 +39,9 @@ docs/LoginOutputBody.md
 docs/NetworkApi.md
 docs/NetworkConfig.md
 docs/ODFConfig.md
+docs/OsacNetworkingConfig.md
+docs/OsacNetworkingCredentials.md
+docs/OsacNetworkingNetris.md
 docs/Plugin.md
 docs/PluginValidateInputBody.md
 docs/PluginValidateOutputBody.md
@@ -107,6 +110,9 @@ src/models/LoginInputBody.ts
 src/models/LoginOutputBody.ts
 src/models/NetworkConfig.ts
 src/models/ODFConfig.ts
+src/models/OsacNetworkingConfig.ts
+src/models/OsacNetworkingCredentials.ts
+src/models/OsacNetworkingNetris.ts
 src/models/Plugin.ts
 src/models/PluginValidateInputBody.ts
 src/models/PluginValidateOutputBody.ts
