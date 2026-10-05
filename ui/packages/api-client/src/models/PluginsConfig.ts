@@ -48,6 +48,11 @@ import {
     TrustManagerConfigToJSON,
     TrustManagerConfigToJSONTyped,
 } from './TrustManagerConfig.js';
+import type { OsacNetworkingConfig } from './OsacNetworkingConfig.js';
+import {
+    OsacNetworkingConfigFromJSON,
+    OsacNetworkingConfigToJSON,
+} from './OsacNetworkingConfig.js';
 
 /**
  * 
@@ -170,6 +175,12 @@ export interface PluginsConfig {
      */
     osacDnsZone?: string;
     /**
+     * High-level networking profile passed through to Helm global.networking
+     * @type {OsacNetworkingConfig}
+     * @memberof PluginsConfig
+     */
+    osacNetworking?: OsacNetworkingConfig;
+    /**
      * Enable Metal3 inventory backend for bare metal fulfillment
      * @type {boolean}
      * @memberof PluginsConfig
@@ -289,6 +300,7 @@ export function PluginsConfigFromJSONTyped(json: any, ignoreDiscriminator: boole
         'osacDatabaseUrl': json['osacDatabaseUrl'] == null ? undefined : json['osacDatabaseUrl'],
         'osacDnsClass': json['osacDnsClass'] == null ? undefined : json['osacDnsClass'],
         'osacDnsZone': json['osacDnsZone'] == null ? undefined : json['osacDnsZone'],
+        'osacNetworking': json['osacNetworking'] == null ? undefined : OsacNetworkingConfigFromJSON(json['osacNetworking']),
         'osacMetal3Enabled': json['osacMetal3Enabled'] == null ? undefined : json['osacMetal3Enabled'],
         'osacMetal3HostClass': json['osacMetal3HostClass'] == null ? undefined : json['osacMetal3HostClass'],
         'osacMetal3Namespace': json['osacMetal3Namespace'] == null ? undefined : json['osacMetal3Namespace'],
@@ -331,6 +343,7 @@ export function PluginsConfigToJSONTyped(value?: Omit<PluginsConfig, '$schema'> 
         'osacDatabaseUrl': value['osacDatabaseUrl'],
         'osacDnsClass': value['osacDnsClass'],
         'osacDnsZone': value['osacDnsZone'],
+        'osacNetworking': OsacNetworkingConfigToJSON(value['osacNetworking']),
         'osacMetal3Enabled': value['osacMetal3Enabled'],
         'osacMetal3HostClass': value['osacMetal3HostClass'],
         'osacMetal3Namespace': value['osacMetal3Namespace'],

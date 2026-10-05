@@ -8,6 +8,7 @@ import { useCatalog } from "../contexts/CatalogContext.tsx";
 import { useConfig } from "../contexts/ConfigContext.tsx";
 import { isValidDnsZone } from "../dnsZone.ts";
 import { validateOsacInventoryBackends } from "../osacBcmValidation.ts";
+import { validateOsacNetworking } from "../osacNetworkingValidation.ts";
 import { STEP_REQUIRED_FIELDS } from "../stepFields.ts";
 
 export function useStepValidation(
@@ -132,6 +133,7 @@ export function useStepValidation(
         });
       }
       errors.push(...validateOsacInventoryBackends(globalData));
+      errors.push(...validateOsacNetworking(globalData));
     }
 
     if (currentSubStepId === "caas") {

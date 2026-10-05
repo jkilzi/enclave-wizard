@@ -104,6 +104,9 @@ func buildOsacConfig(pc *models.PluginsConfig) *osacPluginConfig {
 	if pc.OsacDnsZone != nil {
 		cfg.OsacDnsZone = *pc.OsacDnsZone
 	}
+	if pc.OsacNetworking != nil {
+		cfg.OsacNetworking = pc.OsacNetworking
+	}
 	if len(pc.OsacProfilesList) > 0 {
 		cfg.OsacProfilesList = pc.OsacProfilesList
 	}
@@ -153,6 +156,7 @@ func pluginsConfigHasOsacYAML(pc *models.PluginsConfig) bool {
 		pc.OsacDatabaseUrl != nil ||
 		pc.OsacDnsClass != nil ||
 		pc.OsacDnsZone != nil ||
+		pc.OsacNetworking != nil ||
 		len(pc.OsacProfilesList) > 0 ||
 		pc.OsacBcmEnabled != nil ||
 		pc.OsacBcmUrl != nil ||

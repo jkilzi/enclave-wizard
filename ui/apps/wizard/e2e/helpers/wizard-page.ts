@@ -48,6 +48,15 @@ export interface HubClusterConfig {
   hosts: HostEntry[];
 }
 
+export interface OsacNetrisConfig {
+  controllerUrl: string;
+  username: string;
+  password: string;
+  siteId: string;
+  tenantId: string;
+  tenantName: string;
+}
+
 export interface OsacConfig {
   aapLicenseFilePath?: string;
   aapLicenseFilename?: string;
@@ -56,6 +65,8 @@ export interface OsacConfig {
   rhbkInstances?: number;
   rhbkDeployDatabase?: boolean;
   rhbkDbSize?: string;
+  /** When set, selects Netris fabric manager and fills connection fields. */
+  netris?: OsacNetrisConfig;
 }
 
 export interface CaasConfig {
@@ -272,6 +283,23 @@ export class WizardPage {
     // RHBK database size
     if (config.rhbkDbSize) {
       await this.page.fill("#rhbk-db-size", config.rhbkDbSize);
+    }
+
+    // Fabric manager (Netris) — always visible on OSAC step
+    if (config.netris) {
+      await this.page.locator("#osac-fabric-netris").click();
+      await this.page.fill(
+        "#osac-netris-controller-url",
+        config.netris.controllerUrl,
+      );
+      await this.page.fill("#osac-netris-username", config.netris.username);
+      await this.page.fill("#osac-netris-password", config.netris.password);
+      await this.page.fill("#osac-netris-site-id", config.netris.siteId);
+      await this.page.fill("#osac-netris-tenant-id", config.netris.tenantId);
+      await this.page.fill(
+        "#osac-netris-tenant-name",
+        config.netris.tenantName,
+      );
     }
   }
 

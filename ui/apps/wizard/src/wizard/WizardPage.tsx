@@ -34,6 +34,7 @@ import { useWizardInit } from "./hooks/useWizardInit.ts";
 import {
   validateOsacInventoryBackends,
 } from "./osacBcmValidation.ts";
+import { validateOsacNetworking } from "./osacNetworkingValidation.ts";
 import { STEP_REQUIRED_FIELDS } from "./stepFields.ts";
 import { AAPStep } from "./steps/AAPStep.tsx";
 import { CaasStep } from "./steps/CaasStep.tsx";
@@ -545,6 +546,7 @@ function WizardContent(): React.ReactElement {
         });
       }
       errors.push(...validateOsacInventoryBackends(globalData));
+      errors.push(...validateOsacNetworking(globalData));
     }
 
     if (currentSubStepId === "caas") {

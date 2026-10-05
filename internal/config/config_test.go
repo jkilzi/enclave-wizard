@@ -409,6 +409,119 @@ func TestWriteAllThenReadAll_OsacPluginRoundTrips(t *testing.T) {
 	}
 }
 
+func TestWriteAllThenReadAll_OsacNetworkingNetrisRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	licensePath := "/opt/manifest.zip"
+	controllerURL := "https://ctl.netris.example.com"
+	username := "netris-admin"
+	password := "s3cret"
+	siteID := "1"
+	tenantID := "2"
+	tenantName := "osac"
+
+	want := &models.EnclaveConfig{}
+	want.Global.OsacAapLicenseFile = &licensePath
+	want.Global.OsacNetworking = &models.OsacNetworkingConfig{
+		FabricManager: "netris",
+		K8sManager:    "",
+		Netris: &models.OsacNetworkingNetris{
+			ControllerUrl: &controllerURL,
+			Credentials: &models.OsacNetworkingCredentials{
+				Username: &username,
+				Password: &password,
+			},
+			SiteId:     &siteID,
+			TenantId:   &tenantID,
+			TenantName: &tenantName,
+		},
+	}
+
+	if err := NewWriter(root).WriteAll(want); err != nil {
+		t.Fatalf("WriteAll: %v", err)
+	}
+
+	got, err := NewReader(root).ReadAll()
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+
+	net := got.Global.OsacNetworking
+	if net == nil {
+		t.Fatal("OsacNetworking: want non-nil")
+	}
+	if net.FabricManager != "netris" {
+		t.Errorf("FabricManager: want netris, got %q", net.FabricManager)
+	}
+	if net.K8sManager != "" {
+		t.Errorf("K8sManager: want empty string, got %q", net.K8sManager)
+	}
+	if net.Netris == nil {
+		t.Fatal("Netris: want non-nil")
+	}
+	if net.Netris.ControllerUrl == nil || *net.Netris.ControllerUrl != controllerURL {
+		t.Errorf("ControllerUrl: want %q, got %v", controllerURL, net.Netris.ControllerUrl)
+	}
+	if net.Netris.Credentials == nil || net.Netris.Credentials.Password == nil || *net.Netris.Credentials.Password != password {
+		t.Errorf("Credentials.Password: want %q, got %v", password, net.Netris.Credentials)
+	}
+	if net.Netris.TenantName == nil || *net.Netris.TenantName != tenantName {
+		t.Errorf("TenantName: want %q, got %v", tenantName, net.Netris.TenantName)
+	}
+
+	// Empty k8sManager must appear in YAML when fabricManager=netris.
+	data, err := os.ReadFile(filepath.Join(root, "config", "plugins", "osac.yaml"))
+	if err != nil {
+		t.Fatalf("read osac.yaml: %v", err)
+	}
+	var raw map[string]any
+	if err := yaml.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("unmarshal osac.yaml: %v", err)
+	}
+	networking, ok := raw["osacNetworking"].(map[string]any)
+	if !ok {
+		t.Fatalf("osacNetworking: want map, got %T", raw["osacNetworking"])
+	}
+	if _, ok := networking["k8sManager"]; !ok {
+		t.Error("k8sManager key must be present (empty string) for netris")
+	}
+	if networking["k8sManager"] != "" {
+		t.Errorf("k8sManager YAML: want \"\", got %v", networking["k8sManager"])
+	}
+}
+
+func TestWriteAllThenReadAll_OsacNetworkingAgentlessRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	licensePath := "/opt/manifest.zip"
+	want := &models.EnclaveConfig{}
+	want.Global.OsacAapLicenseFile = &licensePath
+	want.Global.OsacNetworking = &models.OsacNetworkingConfig{
+		FabricManager: "",
+		K8sManager:    "k8s_only",
+	}
+
+	if err := NewWriter(root).WriteAll(want); err != nil {
+		t.Fatalf("WriteAll: %v", err)
+	}
+
+	got, err := NewReader(root).ReadAll()
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+	net := got.Global.OsacNetworking
+	if net == nil {
+		t.Fatal("OsacNetworking: want non-nil")
+	}
+	if net.FabricManager != "" {
+		t.Errorf("FabricManager: want empty, got %q", net.FabricManager)
+	}
+	if net.K8sManager != "k8s_only" {
+		t.Errorf("K8sManager: want k8s_only, got %q", net.K8sManager)
+	}
+	if net.Netris != nil {
+		t.Errorf("Netris: want nil for agentless, got %+v", net.Netris)
+	}
+}
+
 func TestWriteAllThenReadAll_OsacBcmFieldsRoundTrip(t *testing.T) {
 	root := t.TempDir()
 	enabled := true

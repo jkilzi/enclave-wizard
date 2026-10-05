@@ -61,6 +61,7 @@ export const OSAC_PLUGIN_KEYS = [
   "osacDatabaseUrl",
   "osacDnsClass",
   "osacDnsZone",
+  "osacNetworking",
   "osacProfilesList",
   "osacBcmEnabled",
   "osacBcmUrl",
