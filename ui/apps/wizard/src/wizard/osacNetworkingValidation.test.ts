@@ -1,9 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  isOsacNetworkingUnset,
   isValidNetrisControllerUrl,
   validateOsacNetworking,
   validateOsacNetworkingFields,
 } from "./osacNetworkingValidation.ts";
+
+describe("isOsacNetworkingUnset", () => {
+  it("treats missing osacNetworking as unset (UI default not yet in state)", () => {
+    expect(isOsacNetworkingUnset({})).toBe(true);
+    expect(isOsacNetworkingUnset({ osacNetworking: undefined })).toBe(true);
+    expect(isOsacNetworkingUnset({ osacNetworking: {} })).toBe(true);
+  });
+
+  it("treats agentless and netris profiles as set", () => {
+    expect(
+      isOsacNetworkingUnset({
+        osacNetworking: { fabricManager: "", k8sManager: "k8s_only" },
+      }),
+    ).toBe(false);
+    expect(
+      isOsacNetworkingUnset({
+        osacNetworking: { fabricManager: "netris", k8sManager: "" },
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("isValidNetrisControllerUrl", () => {
   it("accepts https URLs", () => {

@@ -15,12 +15,31 @@ export type OsacNetworkingData = {
   };
 };
 
+/** Matches Enclave plugins/osac/defaults.yaml (installer k8s_only profile). */
+export const DEFAULT_OSAC_NETWORKING: OsacNetworkingData = {
+  fabricManager: "",
+  k8sManager: "k8s_only",
+};
+
 export function getOsacNetworking(
   globalData: Record<string, unknown>,
 ): OsacNetworkingData {
   const raw = globalData.osacNetworking;
   if (!raw || typeof raw !== "object") return {};
   return raw as OsacNetworkingData;
+}
+
+export function isOsacNetworkingUnset(
+  globalData: Record<string, unknown>,
+): boolean {
+  const raw = globalData.osacNetworking;
+  if (!raw || typeof raw !== "object") return true;
+  const n = raw as OsacNetworkingData;
+  return (
+    n.fabricManager === undefined &&
+    n.k8sManager === undefined &&
+    n.netris === undefined
+  );
 }
 
 export function isNetrisFabricManager(

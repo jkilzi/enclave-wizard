@@ -22,12 +22,14 @@ import {
 import { css as pfCss } from "@patternfly/react-styles";
 import formStyles from "@patternfly/react-styles/css/components/Form/form.mjs";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFileUpload } from "../../api/useFileUpload.ts";
 import { CertificateField } from "../components/CertificateField.tsx";
 import {
+  DEFAULT_OSAC_NETWORKING,
   getOsacNetworking,
   isNetrisFabricManager,
+  isOsacNetworkingUnset,
   isValidNetrisControllerUrl,
   type OsacNetworkingData,
 } from "../osacNetworkingValidation.ts";
@@ -151,6 +153,12 @@ export const OsacStep: React.FC = () => {
     (next: OsacNetworkingData) => setField("osacNetworking", next),
     [setField],
   );
+
+  useEffect(() => {
+    if (isOsacNetworkingUnset({ osacNetworking: globalData.osacNetworking })) {
+      setNetworking(DEFAULT_OSAC_NETWORKING);
+    }
+  }, [globalData.osacNetworking, setNetworking]);
 
   const setFabricManager = useCallback(
     (mode: "none" | "netris") => {
